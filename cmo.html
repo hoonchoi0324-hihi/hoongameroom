@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>😺 CMO</title>
+<meta name="description" content="고양이 이모지 플랫포머 CMO — 3D 버전과 2D 오리지널. 6개 맵을 지나 보스 😼를 물리쳐라! by manamiwu">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hoonchoi0324-hihi.github.io/CMO-3D-re-make/">
+<meta property="og:title" content="😺 CMO — 3D + 2D 오리지널">
+<meta property="og:description" content="6개 맵을 지나 보스 😼를 물리쳐라! 고양이 이모지 플랫포머 · by manamiwu">
+<meta property="og:image" content="https://hoonchoi0324-hihi.github.io/CMO-3D-re-make/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hoonchoi0324-hihi.github.io/CMO-3D-re-make/og-image.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&display=swap">
+<style>
+:root{
+ --page:#e8e8ee;--pad:#f3f3f7;--btn:#ffffff;--btn-fg:#16161d;--btn-bd:#c6c6d2;--btn-on:#ffe082;
+ box-sizing:border-box;
+ padding-top:env(safe-area-inset-top,0px);
+ padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+ :root:not([data-theme="light"]){--page:#09090d;--pad:#14141b;--btn:#24242e;--btn-fg:#f2f2f7;--btn-bd:#393946;--btn-on:#6d5a1c;}
+}
+:root[data-theme="dark"]{--page:#09090d;--pad:#14141b;--btn:#24242e;--btn-fg:#f2f2f7;--btn-bd:#393946;--btn-on:#6d5a1c;}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--page);overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.wrap{height:100%;max-width:960px;margin:0 auto;display:flex;flex-direction:column;justify-content:space-between}
+#view{position:relative;flex:1 1 auto;min-height:220px;max-height:calc(100vw * .9);overflow:hidden;background:#000}
+#view canvas{display:block}
+#hud{position:absolute;left:10px;top:8px;white-space:pre-line;font:600 13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000;pointer-events:none}
+#bosshp{position:absolute;right:10px;top:8px;display:none;font:700 15px ui-monospace,Menlo,Consolas,monospace;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}
+#banner{position:absolute;left:0;right:0;top:38%;text-align:center;font:800 clamp(24px,6vw,44px) system-ui,sans-serif;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.45),0 0 18px rgba(0,0,0,.5);opacity:0;pointer-events:none}
+#banner.go{animation:ban 1.8s ease-out forwards}
+@keyframes ban{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.05)}25%{transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+#overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;font-family:ui-monospace,Menlo,Consolas,monospace;padding:16px;box-sizing:border-box}
+#overlay.show{display:flex}
+#overlay.over{background:rgba(10,10,14,.62)}
+#overlay.end{background:#000}
+#overlay h1{font-size:clamp(28px,7vw,44px);margin:0 0 10px}
+#overlay h2{font-size:clamp(22px,5.5vw,34px);margin:0 0 14px}
+#overlay p{font-size:clamp(15px,3.6vw,22px);margin:6px 0;line-height:1.6}
+#overlay .big{font-size:clamp(48px,12vw,72px)}
+#overlay .mid{font-size:clamp(26px,6.5vw,38px);margin-top:10px}
+#overlay .cr{font-size:clamp(14px,3.2vw,19px);opacity:.9}
+.seg{animation:fade .6s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.runner{font-size:clamp(36px,9vw,50px);animation:run 3s linear forwards}
+@keyframes run{from{transform:translateX(-42vw)}to{transform:translateX(42vw)}}
+.logo svg{width:clamp(120px,30vw,180px);height:auto}
+.logo svg>*{transform-box:fill-box;transform-origin:center;animation:pop .7s cubic-bezier(.3,1.5,.5,1) both}
+.logo .s1{animation-delay:.2s}.logo .s2{animation-delay:.55s}.logo .s3{animation-delay:.9s}
+.logo .word{margin-top:14px;font:600 clamp(20px,5vw,28px)/1 'Fredoka',system-ui,sans-serif;letter-spacing:.18em;color:#fff;animation:fade 1s 1.5s both}
+@keyframes pop{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+#overlay .cr b{font-size:1.15em}
+.pad{display:flex;gap:10px;padding:12px;background:var(--pad)}
+.btn{flex:1;padding:16px 0;border-radius:16px;border:1px solid var(--btn-bd);background:var(--btn);color:var(--btn-fg);font-size:20px;font-weight:700;touch-action:none}
+.btn:active,.btn.on{background:var(--btn-on);transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid #42a5f5;outline-offset:2px}
+.small{flex:.8}
+.key{display:none;margin-left:6px;font:600 11px ui-monospace,Menlo,Consolas,monospace;opacity:.6;vertical-align:middle}
+#kbhint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:none;padding:6px 12px;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;font:600 13px system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .5s}
+@media (hover:hover) and (pointer:fine){.key{display:inline}#kbhint{display:block}}
+/* ---------- 시작 화면 ---------- */
+#start{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,34px);
+ padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));box-sizing:border-box;
+ background:linear-gradient(180deg,rgba(8,20,48,.25) 0%,rgba(8,10,24,.55) 55%,rgba(5,5,12,.92) 100%);color:#fff;text-align:center}
+#start.hide{display:none}
+.title{margin:0;line-height:.9}
+.title .cat{display:block;font-size:clamp(56px,15vw,92px);animation:hop 1.6s ease-in-out infinite}
+.title .name{display:block;font:700 clamp(64px,19vw,128px)/1 'Fredoka',system-ui,sans-serif;letter-spacing:.04em;text-shadow:0 5px 0 #1e88ff,0 10px 24px rgba(0,0,0,.45)}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.choices{display:flex;flex-direction:column;gap:12px;width:min(320px,100%)}
+.choice{display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 18px;border-radius:18px;border:0;cursor:pointer;
+ font:700 clamp(18px,4.8vw,22px) 'Fredoka',system-ui,sans-serif;transition:transform .12s}
+.choice:active{transform:scale(.97)}
+.choice:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.choice.c3d{background:#ffd166;color:#2b1d00;box-shadow:0 5px 0 #c9951c}
+.choice.c2d{background:rgba(255,255,255,.12);color:#fff;border:2px solid rgba(255,255,255,.6)}
+.choice small{font-weight:600;font-size:.72em;opacity:.75}
+.sig{display:flex;align-items:center;gap:8px;opacity:.8;font:600 13px 'Fredoka',system-ui,sans-serif;letter-spacing:.18em}
+.sig svg{width:22px;height:auto}
+/* ---------- 2D 오리지널 ---------- */
+#orig{position:fixed;inset:0;z-index:15;display:none;background:#111}
+#orig.show{display:block}
+#orig iframe{width:100%;height:100%;border:0;display:block}
+.homebtn{position:fixed;z-index:30;top:calc(8px + env(safe-area-inset-top,0px));right:10px;width:44px;height:44px;border-radius:50%;border:0;
+ background:rgba(0,0,0,.55);color:#fff;font-size:20px;cursor:pointer;display:none}
+.homebtn.show{display:block}
+#mute{right:62px}
+@media (prefers-reduced-motion: reduce){.title .cat{animation:none}}
+@media (prefers-reduced-motion: reduce){#banner.go,.runner,.seg,.logo svg>*,.logo .word{animation-duration:.01s}}
+</style>
+</head>
+<body>
+<div id="start">
+ <h1 class="title"><span class="cat">😺</span><span class="name">CMO</span></h1>
+ <div class="choices">
+  <button class="choice c3d" id="play3d">🧊 3D로 하기</button>
+  <button class="choice c2d" id="play2d">🕹️ 2D 오리지널 <small>2026.7</small></button>
+ </div>
+ <div class="sig"><svg viewBox="0 0 323 300" aria-hidden="true"><circle cx="90" cy="96" r="50" fill="#fff"/><rect x="40" y="158" width="100" height="100" fill="#fff"/><polygon points="160,46 160,258 300,258" fill="#fff"/></svg>manamiwu</div>
+</div>
+<div id="orig"></div>
+<button class="homebtn" id="home" aria-label="처음 화면으로">🏠</button>
+<button class="homebtn" id="mute" aria-label="소리 켜기/끄기">🔊</button>
+<div class="wrap">
+ <div id="view">
+  <div id="hud"></div>
+  <div id="bosshp"></div>
+  <div id="banner"></div>
+  <div id="overlay"></div>
+  <div id="kbhint">⌨️ 화면을 한 번 클릭하고 · A 뒤 · D 앞 · Space 점프 · M 소리</div>
+ </div>
+ <div class="pad">
+  <button class="btn small" id="left" tabindex="-1" aria-label="뒤로 (A)">⬅️<span class="key">A</span></button>
+  <button class="btn small" id="right" tabindex="-1" aria-label="앞으로 (D)">➡️<span class="key">D</span></button>
+  <button class="btn" id="jump" tabindex="-1">⤴️ 점프<span class="key">Space</span></button>
+  <button class="btn small" id="restart" tabindex="-1" aria-label="다시 시작 (R)">🔁<span class="key">R</span></button>
+ </div>
+</div>
+
+<script type="text/plain" id="orig2d"><!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>😺 CMO 2026.7 BOSS HP3</title>
+<style>
+body{margin:0;background:#111;touch-action:manipulation}
+.wrap{max-width:720px;margin:0 auto}
+canvas{display:block;width:100%;height:auto;background:#6ec6ff;image-rendering:pixelated;opacity:1}
+.pad{display:flex;gap:10px;padding:12px;background:rgba(255,255,255,.7);position:sticky;bottom:0}
+.btn{flex:1;padding:14px 0;border-radius:14px;border:1px solid #777;background:#fff;font-size:18px}
+.small{flex:.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+<canvas id="game" width="640" height="360"></canvas>
+<div class="pad">
+<button class="btn small" id="left">⬅️</button>
+<button class="btn small" id="right">➡️</button>
+<button class="btn" id="jump">⤴️ 점프</button>
+<button class="btn small" id="restart">🔁</button>
+</div>
+</div>
+
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+const W=c.width,H=c.height;
+const GROUND=300;
+const MAX_HP=3,MAX_LIVES=3,IFRAME=900;
+const TIGER_TIME=5000,ROCKET_TIME=9000;
+const FONT="50px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+
+const STAGES=[
+ {id:"ground",name:"🌳 초원맵",w:1800,bg:"#6ec6ff",floor:"#4caf50",soil:"#7a4b24",enemy:"🐕",coin:"🪙",next:"🌿",grav:.6,jump:-13,speed:1.1},
+ {id:"sky",name:"☁️ 하늘맵",w:1700,bg:"#1e88ff",floor:"#4caf50",soil:"#2e7d32",enemy:"🦆",coin:"✨",next:"🕳️",grav:.55,jump:-13,speed:1.35},
+ {id:"cave",name:"🪨 동굴맵",w:1800,bg:"#1b1b1b",floor:"#4e342e",soil:"#3e2723",enemy:"🐍",coin:"💎",next:"🌋",grav:.6,jump:-13,speed:1.6},
+ {id:"volcano",name:"🔥 화산맵",w:1900,bg:"#3b0a0a",floor:"#ff5722",soil:"#bf360c",enemy:"🕷️",coin:"❤️",next:"🚀",grav:.6,jump:-13,speed:1.9},
+ {id:"moon",name:"🌙 달맵",w:1900,bg:"#05051f",floor:"#7e7e8a",soil:"#4a4a60",enemy:"👾",coin:"⭐",next:"🏰",grav:.3,jump:-18,speed:1.5},
+ {id:"castle",name:"🏰 성맵",w:2200,bg:"#101018",floor:"#666",soil:"#333",enemy:"🦇",coin:"💠",next:"🚪",grav:.6,jump:-13,speed:1.55}
+];
+
+let si,stage,platforms,enemies,coins,items,boss;
+let cat,hp,lives,score,camX,gameOver,clear,iFrameUntil,tigerUntil,rocketUntil,endingMode,endingStart;
+let killCount,totalEnemyCount,genocideEnding;
+const input={left:false,right:false,jump:false};
+
+function bind(id,key){
+ const el=document.getElementById(id);
+ const on=e=>{e.preventDefault();input[key]=true};
+ const off=e=>{e.preventDefault();input[key]=false};
+ el.addEventListener("touchstart",on,{passive:false});
+ el.addEventListener("touchend",off,{passive:false});
+ el.addEventListener("touchcancel",off,{passive:false});
+ el.addEventListener("mousedown",()=>input[key]=true);
+ addEventListener("mouseup",()=>input[key]=false);
+}
+bind("left","left");
+bind("right","right");
+document.getElementById("jump").addEventListener("touchstart",e=>{e.preventDefault();input.jump=true},{passive:false});
+document.getElementById("jump").addEventListener("mousedown",()=>input.jump=true);
+document.getElementById("restart").onclick=reset;
+
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function aabb(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function hardResetDrawState(){
+ ctx.globalAlpha=1;
+ ctx.filter="none";
+ ctx.globalCompositeOperation="source-over";
+ ctx.shadowColor="transparent";
+ ctx.shadowBlur=0;
+ ctx.shadowOffsetX=0;
+ ctx.shadowOffsetY=0;
+}
+
+
+function makePlatforms(){
+ let a=[];
+ for(let x=180,i=0;x<stage.w-240;x+=280,i++){
+  let y=[245,215,260,205,240,220][i%6];
+  let ww=[150,130,170,120,180,160][i%6];
+  let color=
+    stage.id==="castle"?"#555":
+    stage.id==="moon"?"#aaa":
+    stage.id==="volcano"?"#222":
+    stage.id==="sky"?"#61c9ff":
+    stage.id==="cave"?"#5d4037":
+    "#8d5a2b";
+  a.push({x,y,w:ww,h:16,color});
+ }
+ return a;
+}
+
+function makeEnemies(){
+ let a=[];
+ for(let x=520,i=0;x<stage.w-350;x+=420,i++){
+  a.push({x,y:GROUND-50,w:50,h:50,vx:(i%2?-1:1)*stage.speed,alive:true,homeX:x});
+ }
+ return a;
+}
+
+function makeCoins(){
+ let a=[];
+ for(let x=250,i=0;x<stage.w-250;x+=230,i++){
+  a.push({x,y:[215,185,230,175][i%4],got:false});
+ }
+ return a;
+}
+
+function makeItems(){
+ let a=[];
+ if(stage.id==="ground") a.push({x:1100,y:170,w:40,h:40,type:"tiger",got:false});
+ if(stage.id==="moon") a.push({x:950,y:180,w:40,h:40,type:"rocket",got:false});
+ return a;
+}
+
+function loadStage(n){
+ si=n;
+ stage=STAGES[si];
+ platforms=makePlatforms();
+ enemies=makeEnemies();
+ totalEnemyCount += enemies.length;
+ coins=makeCoins();
+ items=makeItems();
+ boss=null;
+ if(stage.id==="castle"){
+  boss={x:stage.w-430,y:GROUND-58,w:58,h:58,hp:3,alive:true,vx:1.9,homeX:stage.w-430};
+ }
+ cat.x=60;
+ cat.y=stage.id==="moon"?160:GROUND-50;
+ cat.vx=0;cat.vy=0;cat.onGround=false;
+ camX=0;
+ tigerUntil=0;
+ rocketUntil=0;
+}
+
+function reset(){
+ cat={x:60,y:GROUND-50,w:50,h:50,vx:0,vy:0,onGround:false};
+ hp=MAX_HP;
+ lives=MAX_LIVES;
+ score=0;
+ killCount=0;
+ totalEnemyCount=0;
+ genocideEnding=false;
+ gameOver=false;
+ clear=false;
+ endingMode=false;
+ endingStart=0;
+ iFrameUntil=0;
+ tigerUntil=0;
+ rocketUntil=0;
+ camX=0;
+ loadStage(0);
+}
+
+function damage(now){
+ if(now<iFrameUntil)return;
+ hp--;
+ iFrameUntil=now+IFRAME;
+ cat.vy=-6;
+ if(hp<=0){
+  lives--;
+  if(lives<=0){
+   gameOver=true;
+  }else{
+   hp=MAX_HP;
+   cat.x=60;
+   cat.y=stage.id==="moon"?160:GROUND-50;
+   cat.vx=0;cat.vy=0;camX=0;
+  }
+ }
+}
+
+function resolve(){
+ cat.onGround=false;
+ if(cat.y+cat.h>=GROUND){
+  cat.y=GROUND-cat.h;
+  cat.vy=0;
+  cat.onGround=true;
+ }
+ for(const p of platforms){
+  const prev=(cat.y+cat.h)-cat.vy;
+  const now=cat.y+cat.h;
+  if(cat.vy>=0&&cat.x+cat.w>p.x&&cat.x<p.x+p.w&&prev<=p.y&&now>=p.y&&cat.y<p.y){
+   cat.y=p.y-cat.h;
+   cat.vy=0;
+   cat.onGround=true;
+  }
+ }
+}
+
+function update(){
+ if(gameOver||endingMode)return;
+
+ const now=performance.now();
+ const tiger=now<tigerUntil;
+ const rocket=now<rocketUntil;
+ const speed=tiger?5.5:3;
+ const grav=rocket?0:stage.grav;
+ const jump=rocket?-8:stage.jump;
+
+ cat.vx=0;
+ if(input.left)cat.vx=-speed;
+ if(input.right)cat.vx=speed;
+
+ if(input.jump){
+  if(cat.onGround||rocket){
+   cat.vy=jump;
+   cat.onGround=false;
+  }
+  input.jump=false;
+ }
+
+ cat.vy+=grav;
+ if(rocket&&cat.vy>1.5)cat.vy=1.5;
+ cat.x+=cat.vx;
+ cat.y+=cat.vy;
+ cat.x=clamp(cat.x,0,stage.w-cat.w);
+
+ resolve();
+ camX=clamp(cat.x-W*.35,0,stage.w-W);
+
+ for(const e of enemies){
+  if(!e.alive)continue;
+  e.x+=e.vx;
+  if(e.x<e.homeX-70||e.x>e.homeX+70)e.vx*=-1;
+ }
+
+ if(boss&&boss.alive){
+  boss.x+=boss.vx;
+  if(boss.x<boss.homeX-90||boss.x>boss.homeX+90)boss.vx*=-1;
+ }
+
+ for(const k of coins){
+  if(k.got)continue;
+  const dx=cat.x+25-k.x;
+  const dy=cat.y+25-k.y;
+  if(dx*dx+dy*dy<24*24){
+   k.got=true;
+   score+=10;
+  }
+ }
+
+ for(const it of items){
+  if(it.got)continue;
+  if(aabb(cat,it)){
+   it.got=true;
+   if(it.type==="tiger"){
+    tigerUntil=now+TIGER_TIME;
+    score+=500;
+   }else{
+    rocketUntil=now+ROCKET_TIME;
+    score+=500;
+   }
+  }
+ }
+
+ for(const e of enemies){
+  if(!e.alive||!aabb(cat,e))continue;
+  const stomp=cat.vy>0&&cat.y+cat.h-cat.vy<=e.y+8;
+  if(tiger||stomp){
+   e.alive=false;
+   killCount++;
+   score+=100;
+   cat.vy=-9;
+  }else{
+   damage(now);
+  }
+ }
+
+ if(boss&&boss.alive&&aabb(cat,boss)){
+  const stomp=cat.vy>0&&cat.y+cat.h-cat.vy<=boss.y+10;
+  if(tiger||stomp){
+   boss.hp--;
+   cat.vy=-10;
+   score+=150;
+   if(boss.hp<=0){
+    boss.alive=false;
+    score+=1000;
+   }
+  }else{
+   damage(now);
+  }
+ }
+
+ if(stage.id==="castle"&&boss&&boss.alive&&cat.x>stage.w-160){
+  cat.x=stage.w-160;
+ }
+
+ if(cat.x>stage.w-90){
+  if(si<STAGES.length-1){
+   loadStage(si+1);
+  }else if(!boss||!boss.alive){
+   clear=true;
+   genocideEnding = killCount>=totalEnemyCount;
+   endingMode=true;
+   endingStart=performance.now();
+  }
+ }
+}
+
+function drawBackground(){
+ hardResetDrawState();
+ ctx.fillStyle=stage.bg;
+ ctx.fillRect(0,0,W,H);
+
+ if(stage.id==="ground"){
+  ctx.font="34px sans-serif";
+  ctx.fillText("☁️",120-camX*.15,75);
+  ctx.fillText("☁️",440-camX*.15,95);
+ }
+ if(stage.id==="sky"){
+  ctx.font="36px sans-serif";
+  ctx.fillText("☁️",80-camX*.1,70);
+  ctx.fillText("☁️",360-camX*.1,120);
+  ctx.fillText("☁️",610-camX*.1,80);
+ }
+ if(stage.id==="cave"){
+  ctx.fillStyle="#2c2c2c";
+  ctx.fillRect(0,0,W,70);
+  ctx.font="28px sans-serif";
+  ctx.fillText("🪨",120-camX*.12,65);
+  ctx.fillText("🪨",390-camX*.12,80);
+ }
+ if(stage.id==="volcano"){
+  ctx.font="42px sans-serif";
+  ctx.fillText("🌋",100-camX*.08,115);
+  ctx.fillText("🌋",450-camX*.08,95);
+ }
+ if(stage.id==="moon"){
+  ctx.font="46px sans-serif";
+  ctx.fillText("🌕",470-camX*.06,80);
+  ctx.font="24px sans-serif";
+  ctx.fillText("⭐",120,60);
+  ctx.fillText("🪐",270,110);
+ }
+ if(stage.id==="castle"){
+  ctx.font="52px sans-serif";
+  ctx.fillText("🏰",410-camX*.05,130);
+  ctx.font="30px sans-serif";
+  ctx.fillText("⚡",160,70);
+ }
+
+ ctx.fillStyle=stage.floor;
+ ctx.fillRect(0,GROUND,W,H-GROUND);
+ ctx.fillStyle=stage.soil;
+ ctx.fillRect(0,GROUND+20,W,H-GROUND-20);
+}
+
+function drawEnding(){
+ hardResetDrawState();
+ const t=(performance.now()-endingStart)/1000;
+ ctx.fillStyle="#000";
+ ctx.fillRect(0,0,W,H);
+ ctx.fillStyle="#fff";
+ ctx.textAlign="center";
+
+ if(genocideEnding){
+  if(t<4){
+   ctx.font="34px sans-serif";
+   ctx.fillText("😼",W/2,120);
+   ctx.font="22px monospace";
+   ctx.fillText("...다들 사라졌구나.",W/2,190);
+  }else if(t<8){
+   ctx.font="24px monospace";
+   ctx.fillText("나는 평화를 원했어.",W/2,150);
+   ctx.fillText("하지만 이런 평화는 아니었는데.",W/2,190);
+  }else if(t<12){
+   ctx.font="24px monospace";
+   ctx.fillText("내가 풀어놓은 친구들은",W/2,145);
+   ctx.fillText("세상을 외롭지 않게 하려고 있었던 거야.",W/2,185);
+   ctx.font="34px sans-serif";
+   ctx.fillText("🐕 🦆 🐍 🕷️ 👾 🦇",W/2,245);
+  }else if(t<17){
+   ctx.font="28px monospace";
+   ctx.fillText("조용해졌네.",W/2,150);
+   ctx.fillText("너무 조용해.",W/2,195);
+  }else if(t<25){
+   ctx.font="34px monospace";
+   ctx.fillText("The End",W/2,170);
+  }else if(t<26.2){
+   ctx.font="28px monospace";
+   ctx.fillText("To Be Continued...",W/2,180);
+  }else if(t<28){
+   ctx.font="64px sans-serif";
+   ctx.fillText("😼",W/2,180);
+  }else{
+   ctx.font="34px monospace";
+   ctx.fillText("CMO 2 ?",W/2,170);
+   ctx.font="22px monospace";
+   ctx.fillText("이번에는 다른 선택을 할 수 있을까.",W/2,225);
+  }
+ }else{
+  if(t<4){
+   ctx.font="34px sans-serif";
+   ctx.fillText("😼",W/2,120);
+   ctx.font="22px monospace";
+   ctx.fillText("나는 세상이 조금 시끄러운 게 좋았어.",W/2,190);
+  }else if(t<8){
+   ctx.font="22px monospace";
+   ctx.fillText("그래서 친구들을 풀어놓았지.",W/2,145);
+   ctx.font="34px sans-serif";
+   ctx.fillText("🐕 🦆 🐍 🕷️ 👾 🦇",W/2,205);
+  }else if(t<11){
+   ctx.font="22px monospace";
+   ctx.fillText("이제 너는 혼자가 아니다.",W/2,180);
+  }else if(t<14){
+   ctx.font="26px monospace";
+   ctx.fillText("Thank you for playing",W/2,120);
+   ctx.font="50px sans-serif";
+   ctx.fillText("😺",120+(t-11)*95,220);
+  }else if(t<17){
+   ctx.font="34px sans-serif";
+   ctx.fillText("😺 🤝 😸",W/2,190);
+  }else if(t<20){
+   ctx.font="42px sans-serif";
+   ctx.fillText("✈️  😺😸",120+(t-17)*120,170-(t-17)*18);
+  }else if(t<25){
+   ctx.font="34px monospace";
+   ctx.fillText("The End",W/2,150);
+   ctx.font="20px monospace";
+   ctx.fillText("Created by",W/2,210);
+   ctx.fillText("manamiwu",W/2,240);
+   ctx.fillText("Special Thanks  ChatGPT 🤖",W/2,285);
+  }else if(t<35){
+   ctx.font="30px monospace";
+   ctx.fillText("The End",W/2,180);
+  }else if(t<36.2){
+   ctx.font="28px monospace";
+   ctx.fillText("To Be Continued...",W/2,180);
+  }else if(t<38){
+   ctx.font="64px sans-serif";
+   ctx.fillText("😸",W/2,180);
+  }else{
+   ctx.font="38px monospace";
+   ctx.fillText("CMO 2",W/2,170);
+   ctx.font="24px sans-serif";
+   ctx.fillText("😺   😸",W/2,230);
+  }
+ }
+
+ ctx.textAlign="left";
+}
+
+function draw(){
+ hardResetDrawState();
+ if(endingMode){
+  drawEnding();
+  return;
+ }
+
+ drawBackground();
+
+ for(const p of platforms){
+  const x=p.x-camX;
+  if(x+p.w<0||x>W)continue;
+  ctx.fillStyle=p.color;
+  ctx.fillRect(x,p.y,p.w,p.h);
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(x,p.y,p.w,3);
+ }
+
+ hardResetDrawState();
+ ctx.font="22px sans-serif";
+ for(const k of coins){
+  if(k.got)continue;
+  const x=k.x-camX;
+  if(x>-30&&x<W+30)ctx.fillText(stage.coin,x-10,k.y+8);
+ }
+
+ hardResetDrawState();
+ ctx.font="40px sans-serif";
+ for(const it of items){
+  if(it.got)continue;
+  const x=it.x-camX;
+  if(x>-50&&x<W+50)ctx.fillText(it.type==="tiger"?"🐯":"🚀",x-5,it.y+35);
+ }
+
+ // ✅ 몹 고정: 여기서 절대 전부 유령/반투명 안 됨
+ hardResetDrawState();
+ ctx.font=FONT;
+ for(const e of enemies){
+  if(!e.alive)continue;
+  const x=e.x-camX;
+  if(x>-60&&x<W+60)ctx.fillText(stage.enemy,x-10,e.y+43);
+ }
+
+ if(boss&&boss.alive){
+  const x=boss.x-camX;
+  ctx.font=FONT;
+  ctx.fillText("😼",x-10,boss.y+45);
+  ctx.font="16px monospace";
+  ctx.fillStyle="#fff";
+  ctx.fillText("BOSS HP:"+boss.hp,420,22);
+ }
+
+ const now=performance.now();
+ const blink=now<iFrameUntil&&Math.floor(now/90)%2===0;
+ const tiger=now<tigerUntil;
+ const rocket=now<rocketUntil;
+
+ if(!blink){
+  hardResetDrawState();
+  ctx.font=FONT;
+  ctx.fillText(tiger?"🐯":rocket?"🚀":"😺",cat.x-camX-10,cat.y+43);
+ }
+
+ const nx=stage.w-70-camX;
+ ctx.font="42px sans-serif";
+ if(nx>-80&&nx<W+80)ctx.fillText(stage.next,nx,stage.id==="moon"?260:285);
+
+ ctx.fillStyle="#fff";
+ ctx.strokeStyle="#000";
+ ctx.lineWidth=3;
+ ctx.font="14px monospace";
+ function txt(s,x,y){ctx.strokeText(s,x,y);ctx.fillText(s,x,y)}
+
+ txt(stage.name,10,20);
+ txt("CMO 2026.7 BOSS HP3",10,40);
+ txt("SCORE:"+score,10,60);
+ txt("HP:"+"♥".repeat(hp)+"♡".repeat(MAX_HP-hp),10,80);
+ txt("LIVES:"+lives,10,100);
+ txt("MAP:"+Math.floor(cat.x)+"/"+stage.w,10,120);
+ txt("KILLS:"+killCount+"/"+totalEnemyCount,10,140);
+
+ if(tiger)txt("🐯 야생의 돌아옴:"+Math.ceil((tigerUntil-now)/1000)+"초",10,160);
+ if(rocket)txt("🚀 비행:"+Math.ceil((rocketUntil-now)/1000)+"초",10,180);
+
+ if(gameOver){
+  ctx.fillStyle="#111";
+  ctx.globalAlpha=.6;
+  ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#fff";
+  ctx.font="28px monospace";
+  ctx.fillText("GAME OVER",220,170);
+ }
+}
+
+function loop(){
+ update();
+ draw();
+ requestAnimationFrame(loop);
+}
+
+reset();
+loop();
+<\/script>
+</body>
+</html>
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ================== 기본 설정 (원본 규칙 그대로) ==================
+const GROUND=300,MAX_HP=3,MAX_LIVES=3,IFRAME=900,TIGER_TIME=5000,ROCKET_TIME=9000;
+const S=1/50; // 50px = 3D 1칸
+const EMOJI_FONT="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+
+const STAGES=[
+ {id:"ground",name:"🌳 초원맵",w:1800,bg:"#6ec6ff",floor:"#4caf50",soil:"#7a4b24",enemy:"🐕",coin:"🪙",next:"🌿",grav:.6,jump:-13,speed:1.1,
+  plat:"#8d5a2b",hemi:[0xffffff,0x4caf50,.85],sun:[0xffffff,.95],fog:[28,75],lamp:false},
+ {id:"sky",name:"☁️ 하늘맵",w:1700,bg:"#1e88ff",floor:"#4caf50",soil:"#2e7d32",enemy:"🦆",coin:"✨",next:"🕳️",grav:.55,jump:-13,speed:1.35,
+  plat:"#61c9ff",hemi:[0xffffff,0x90caf9,.95],sun:[0xffffff,.9],fog:[30,85],lamp:false},
+ {id:"cave",name:"🪨 동굴맵",w:1800,bg:"#1b1b1b",floor:"#4e342e",soil:"#3e2723",enemy:"🐍",coin:"💎",next:"🌋",grav:.6,jump:-13,speed:1.6,
+  plat:"#5d4037",hemi:[0x8899aa,0x221100,.4],sun:[0xaabbff,.35],fog:[10,32],lamp:true},
+ {id:"volcano",name:"🔥 화산맵",w:1900,bg:"#3b0a0a",floor:"#ff5722",soil:"#bf360c",enemy:"🕷️",coin:"❤️",next:"🚀",grav:.6,jump:-13,speed:1.9,
+  plat:"#222",hemi:[0xff9966,0x330000,.55],sun:[0xffb080,.75],fog:[16,55],lamp:false},
+ {id:"moon",name:"🌙 달맵",w:1900,bg:"#05051f",floor:"#7e7e8a",soil:"#4a4a60",enemy:"👾",coin:"⭐",next:"🏰",grav:.3,jump:-18,speed:1.5,
+  plat:"#aaa",hemi:[0xaab4ff,0x222233,.55],sun:[0xffffff,.85],fog:[40,120],lamp:false},
+ {id:"castle",name:"🏰 성맵",w:2200,bg:"#101018",floor:"#666",soil:"#333",enemy:"🦇",coin:"💠",next:"🚪",grav:.6,jump:-13,speed:1.55,
+  plat:"#555",hemi:[0x8877aa,0x111111,.4],sun:[0xb39ddb,.5],fog:[14,48],lamp:true}
+];
+
+let si,stage,platforms,enemies,coins,items,boss;
+let cat,hp,lives,score,gameOver,clear,iFrameUntil,tigerUntil,rocketUntil,endingMode,endingStart;
+let killCount,totalEnemyCount,genocideEnding;
+const input={left:false,right:false,jump:false};
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function aabb(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+
+// ================== 입력 ==================
+function bind(id,key){
+ const el=$(id);
+ const on=e=>{e.preventDefault();el.classList.add("on");applyKb()};
+ const off=e=>{e.preventDefault();el.classList.remove("on");applyKb()};
+ el.addEventListener("touchstart",on,{passive:false});
+ el.addEventListener("touchend",off,{passive:false});
+ el.addEventListener("touchcancel",off,{passive:false});
+ el.addEventListener("mousedown",e=>{e.preventDefault();el.classList.add("on");applyKb()});
+ addEventListener("mouseup",()=>{el.classList.remove("on");applyKb()});
+}
+bind("left","left");bind("right","right");
+$("jump").addEventListener("touchstart",e=>{e.preventDefault();input.jump=true},{passive:false});
+$("jump").addEventListener("mousedown",e=>{e.preventDefault();input.jump=true});
+$("restart").onclick=e=>{e.currentTarget.blur();if(clear){location.reload();return}reset()};
+
+// ⌨️ 키보드: A=뒤(왼쪽) D=앞(오른쪽) Space=점프 — 터치 버튼과 동시에 사용 가능
+// 한글 입력 상태(ㅁ/ㅇ)여도 동작하도록 물리 키(code)와 글자(key)를 모두 확인
+const KEY_BACK=new Set(["KeyA","ArrowLeft","a","A","ㅁ"]);
+const KEY_FWD=new Set(["KeyD","ArrowRight","d","D","ㅇ"]);
+const KEY_JUMP=new Set(["Space"," ","Spacebar","ArrowUp","KeyW"]);
+const kb={back:false,fwd:false};
+function isKey(set,e){return set.has(e.code)||set.has(e.key)}
+function applyKb(){
+ // 키보드 또는 터치 중 하나라도 눌려 있으면 이동
+ input.left=kb.back||$("left").classList.contains("on");
+ input.right=kb.fwd||$("right").classList.contains("on");
+}
+let hintHidden=false;
+function hideHint(){if(hintHidden)return;hintHidden=true;const h=$("kbhint");h.style.opacity="0";setTimeout(()=>h.style.display="none",600)}
+addEventListener("keydown",e=>{
+ if(mode!=="3d")return;
+ let used=false;
+ if(isKey(KEY_BACK,e)){kb.back=true;used=true}
+ if(isKey(KEY_FWD,e)){kb.fwd=true;used=true}
+ if(isKey(KEY_JUMP,e)){if(!e.repeat)input.jump=true;used=true}
+ if(e.code==="KeyR"&&!e.repeat){if(clear){location.reload();return}reset();used=true}
+ if(e.code==="KeyM"&&!e.repeat){SFX.toggle();drawMute();used=true}
+ if(used){e.preventDefault();applyKb();hideHint()}
+},{capture:true});
+addEventListener("keyup",e=>{
+ if(mode!=="3d")return;
+ let used=false;
+ if(isKey(KEY_BACK,e)){kb.back=false;used=true}
+ if(isKey(KEY_FWD,e)){kb.fwd=false;used=true}
+ if(isKey(KEY_JUMP,e))used=true;
+ if(used){e.preventDefault();applyKb()}
+},{capture:true});
+// 창이 포커스를 잃으면 키가 눌린 채로 남지 않게
+addEventListener("blur",()=>{kb.back=kb.fwd=false;applyKb()});
+// 임베드된 화면에서도 키 입력을 받도록 클릭/터치 시 포커스 가져오기
+addEventListener("pointerdown",()=>{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();window.focus()});
+window.focus();
+
+// ================== 3D 준비 ==================
+const view=$("view"),hudEl=$("hud"),bossEl=$("bosshp"),ov=$("overlay"),banner=$("banner");
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+view.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,1.6,.1,300);
+function resize(){
+ const w=view.clientWidth,h=view.clientHeight;
+ renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view);resize();
+
+const hemi=new THREE.HemisphereLight(0xffffff,0x444444,.8);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,.9);
+sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.bias=-.0008;
+Object.assign(sun.shadow.camera,{left:-13,right:13,top:13,bottom:-6,near:1,far:45});
+scene.add(sun);scene.add(sun.target);
+const lamp=new THREE.PointLight(0xffc27a,0,10,1.5);scene.add(lamp);
+
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85,metalness:0},o));
+function box(w,h,d,m){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.castShadow=true;b.receiveShadow=true;return b}
+
+// 이모지 스프라이트 (몹/코인/아이템은 원작 이모지 느낌 유지)
+const texCache={};
+function emojiTex(e){
+ if(texCache[e])return texCache[e];
+ const cv=document.createElement("canvas");cv.width=cv.height=128;
+ const x=cv.getContext("2d");x.font="100px "+EMOJI_FONT;x.textAlign="center";x.textBaseline="middle";x.fillText(e,64,72);
+ return texCache[e]=new THREE.CanvasTexture(cv);
+}
+function emojiSprite(e,s){
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(e),transparent:true,alphaTest:.1}));
+ sp.scale.set(s,s,1);return sp;
+}
+const blobGeo=new THREE.CircleGeometry(1,20);
+function blob(s){
+ const m=new THREE.Mesh(blobGeo,new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.3,depthWrite:false}));
+ m.rotation.x=-Math.PI/2;m.scale.setScalar(s);return m;
+}
+
+// ---------- 복셀 고양이 ----------
+function makeCat(fur,dark,opt={}){
+ const g=new THREE.Group();
+ const furM=mat(fur),darkM=mat(dark),blk=mat(opt.boss?0xff1744:0x151515,opt.boss?{emissive:0xb00020,emissiveIntensity:.8}:{roughness:.4});
+ const pink=mat(0xff8fa3),white=new THREE.MeshBasicMaterial({color:0xffffff}),ink=mat(0x151515);
+ const body=box(.62,.38,.44,furM);body.position.set(-.12,.36,0);g.add(body);
+ const head=box(.5,.44,.46,furM);head.position.set(.22,.64,0);g.add(head);
+ const earGeo=new THREE.ConeGeometry(.1,.2,4);
+ for(const z of[-.13,.13]){const e=new THREE.Mesh(earGeo,furM);e.position.set(.22,.95,z);e.rotation.y=Math.PI/4;e.castShadow=true;g.add(e)}
+ for(const x of[.12,.32]){
+  const ey=box(.07,.11,.03,blk);ey.position.set(x,.68,.235);g.add(ey);
+  if(!opt.boss){const hl=new THREE.Mesh(new THREE.BoxGeometry(.025,.025,.01),white);hl.position.set(x+.015,.71,.252);g.add(hl)}
+ }
+ const nose=box(.07,.05,.03,pink);nose.position.set(.22,.585,.235);g.add(nose);
+ const legs=[];
+ for(const[lx,lz]of[[.05,.14],[.05,-.14],[-.3,.14],[-.3,-.14]]){
+  const p=new THREE.Group();p.position.set(lx,.2,lz);const l=box(.1,.2,.1,furM);l.position.y=-.1;p.add(l);g.add(p);legs.push(p);
+ }
+ const tail=new THREE.Group();tail.position.set(-.42,.45,0);const tb=box(.08,.38,.08,furM);tb.position.y=.19;tail.add(tb);tail.rotation.z=.5;g.add(tail);
+ const stripes=new THREE.Group();
+ for(const x of[-.3,-.12,.06]){const s=box(.06,.405,.455,darkM);s.position.set(x,.36,0);stripes.add(s)}
+ const hs=box(.3,.05,.465,darkM);hs.position.set(.22,.8,0);stripes.add(hs);
+ stripes.visible=false;g.add(stripes);
+ if(opt.boss){
+  const b1=box(.15,.04,.03,ink);b1.position.set(.12,.77,.24);b1.rotation.z=-.45;g.add(b1);
+  const b2=box(.15,.04,.03,ink);b2.position.set(.32,.77,.24);b2.rotation.z=.45;g.add(b2);
+  const gold=mat(0xffc107,{metalness:.6,roughness:.3,emissive:0x5a3a00});
+  const cr=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.1,10),gold);cr.position.set(.22,.9,0);g.add(cr);
+  for(let i=0;i<5;i++){const a=i/5*Math.PI*2;const sp=new THREE.Mesh(new THREE.ConeGeometry(.04,.12,5),gold);sp.position.set(.22+Math.cos(a)*.14,1.01,Math.sin(a)*.14);g.add(sp)}
+ }
+ return{g,furM,legs,tail,stripes,phase:0};
+}
+function makeRocket(){
+ const g=new THREE.Group();
+ const b=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.7,12),mat(0xeeeeee,{metalness:.3,roughness:.4}));b.rotation.z=-Math.PI/2;b.castShadow=true;
+ const n=new THREE.Mesh(new THREE.ConeGeometry(.13,.25,12),mat(0xe53935));n.rotation.z=-Math.PI/2;n.position.x=.47;
+ const f=new THREE.Mesh(new THREE.ConeGeometry(.11,.35,10),new THREE.MeshBasicMaterial({color:0xffa000}));f.rotation.z=Math.PI/2;f.position.x=-.52;
+ const fin=box(.18,.22,.03,mat(0xe53935));fin.position.set(-.25,.14,0);
+ g.add(b,n,f,fin);g.position.set(-.05,.05,0);g.userData.flame=f;g.visible=false;return g;
+}
+const catM=makeCat(0xf6c343,0x5d3a00);
+const rocketM=makeRocket();catM.g.add(rocketM);
+scene.add(catM.g);
+
+// ---------- 파티클 ----------
+const parts=[],pGeo=new THREE.BoxGeometry(.12,.12,.12);
+function burst(x,y,color,n=12,pow=1){
+ for(let i=0;i<n;i++){
+  const m=new THREE.Mesh(pGeo,new THREE.MeshBasicMaterial({color}));m.position.set(x,y,0);scene.add(m);
+  parts.push({m,vx:(Math.random()-.5)*6*pow,vy:(Math.random()*5+1)*pow,vz:(Math.random()-.5)*6*pow,life:.7});
+ }
+}
+function clearParts(){for(const p of parts){scene.remove(p.m);p.m.material.dispose()}parts.length=0}
+
+// ---------- 배경 장식 ----------
+let seed=1;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function far(g,L,c){const p=new THREE.Mesh(new THREE.PlaneGeometry(L+240,90),mat(c));p.rotation.x=-Math.PI/2;p.position.set(L/2,-.03,-50);p.receiveShadow=true;g.add(p)}
+function tree(x,z,s){
+ const g=new THREE.Group();
+ const t=new THREE.Mesh(new THREE.CylinderGeometry(.12*s,.16*s,1.2*s,6),mat(0x6d4c41));t.position.y=.6*s;
+ const l=new THREE.Mesh(new THREE.IcosahedronGeometry(.8*s,0),mat(0x2e7d32,{flatShading:true}));l.position.y=1.6*s;
+ t.castShadow=l.castShadow=true;g.add(t,l);g.position.set(x,0,z);return g;
+}
+const cloudM=mat(0xffffff,{roughness:1});
+function cloud(x,y,z,s){
+ const g=new THREE.Group();
+ for(let i=0;i<4;i++){const b=new THREE.Mesh(new THREE.IcosahedronGeometry((.6+rnd()*.5)*s,1),cloudM);b.position.set((i-1.5)*.7*s,rnd()*.3*s,rnd()*.3);g.add(b)}
+ g.position.set(x,y,z);return g;
+}
+function island(x,y,z){
+ const g=new THREE.Group();
+ const r=new THREE.Mesh(new THREE.ConeGeometry(1.2,1.8,7),mat(0x6d4c41,{flatShading:true}));r.rotation.x=Math.PI;r.position.y=-.9;
+ const t=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.2,.3,7),mat(0x66bb6a,{flatShading:true}));
+ g.add(r,t,tree(.2,0,.6));g.position.set(x,y,z);return g;
+}
+let camLook=new THREE.Vector3();
+const DECOR={
+ ground(g,L,A){
+  far(g,L,0x57a24a);
+  for(let i=0;i<7;i++){const h=new THREE.Mesh(new THREE.SphereGeometry(9+rnd()*5,16,10),mat(0x5cb85c,{flatShading:true}));h.position.set(-10+i*(L+20)/6,-5,-32-rnd()*8);g.add(h)}
+  for(let x=-4;x<L+4;x+=2.4+rnd()*2)g.add(tree(x,-3.4-rnd()*4,.8+rnd()*.6));
+  const cl=[];for(let x=-10;x<L+20;x+=6+rnd()*4){const c=cloud(x,6+rnd()*3,-16-rnd()*8,1+rnd());g.add(c);cl.push(c)}
+  const sb=new THREE.Mesh(new THREE.SphereGeometry(2.2,20,14),new THREE.MeshBasicMaterial({color:0xfff176,fog:false}));g.add(sb);
+  A.push((t,dt)=>{cl.forEach(c=>c.position.x+=dt*.3);sb.position.set(camLook.x+9,13,-45)});
+ },
+ sky(g,L,A){
+  for(let x=-20;x<L+30;x+=4+rnd()*3)g.add(cloud(x,-1.4-rnd(),-6-rnd()*20,1.6+rnd()*1.5));
+  for(let x=0;x<L;x+=7+rnd()*5)g.add(island(x,2+rnd()*4,-9-rnd()*6));
+  const cl=[];for(let x=-10;x<L+20;x+=5+rnd()*4){const c=cloud(x,7+rnd()*4,-12-rnd()*10,1+rnd());g.add(c);cl.push(c)}
+  A.push((t,dt)=>cl.forEach(c=>c.position.x+=dt*.5));
+ },
+ cave(g,L,A){
+  const wall=box(L+60,14,1,mat(0x2a211c));wall.position.set(L/2,3,-6);wall.castShadow=false;g.add(wall);
+  const ceil=box(L+60,1.2,12,mat(0x221a15));ceil.position.set(L/2,8,-1);ceil.castShadow=false;g.add(ceil);
+  const sm=mat(0x3b2f28,{flatShading:true});
+  for(let x=-5;x<L+5;x+=1.2+rnd()*1.5){const h=.8+rnd()*1.8;const c=new THREE.Mesh(new THREE.ConeGeometry(.25+rnd()*.25,h,6),sm);c.rotation.x=Math.PI;c.position.set(x,7.4-h/2,-1-rnd()*4);g.add(c)}
+  for(let x=-5;x<L+5;x+=2+rnd()*2){const h=.5+rnd()*1.2;const c=new THREE.Mesh(new THREE.ConeGeometry(.3,h,6),sm);c.position.set(x,h/2,-3.6-rnd()*1.2);g.add(c)}
+  const cm=mat(0x00e5ff,{emissive:0x00b8d4,emissiveIntensity:.9,roughness:.2});const cr=[];
+  for(let x=2;x<L;x+=4+rnd()*4){const o=new THREE.Mesh(new THREE.OctahedronGeometry(.25+rnd()*.2),cm);o.position.set(x,.4,-4-rnd());o.scale.y=1.8;g.add(o);cr.push(o)}
+  A.push(t=>{cr.forEach((o,i)=>o.rotation.y=t*.8+i);cm.emissiveIntensity=.7+Math.sin(t*2)*.3});
+ },
+ volcano(g,L,A){
+  far(g,L,0x2a0c06);
+  for(let i=0;i<6;i++){
+   const h=9+rnd()*4;const v=new THREE.Mesh(new THREE.ConeGeometry(7+rnd()*3,h,9),mat(0x3e2217,{flatShading:true}));v.position.set(-10+i*(L+20)/5,h/2-1,-30-rnd()*6);g.add(v);
+   const top=new THREE.Mesh(new THREE.SphereGeometry(1.1,10,8),new THREE.MeshBasicMaterial({color:0xff5722}));top.position.set(v.position.x,h-1.3,v.position.z);g.add(top);
+  }
+  const lm=mat(0xff6d00,{emissive:0xff3d00,emissiveIntensity:1});
+  const lava=new THREE.Mesh(new THREE.PlaneGeometry(L+80,3),lm);lava.rotation.x=-Math.PI/2;lava.position.set(L/2,.01,-7);g.add(lava);
+  const N=160,pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){pos[i*3]=rnd()*(L+20)-10;pos[i*3+1]=rnd()*9;pos[i*3+2]=-8+rnd()*9}
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  g.add(new THREE.Points(geo,new THREE.PointsMaterial({color:0xffab40,size:.13})));
+  A.push((t,dt)=>{
+   lm.emissiveIntensity=.8+Math.sin(t*3)*.25;
+   for(let i=0;i<N;i++){pos[i*3+1]+=dt*(.6+(i%5)*.2);pos[i*3]+=Math.sin(t+i)*dt*.2;if(pos[i*3+1]>9)pos[i*3+1]=0}
+   geo.attributes.position.needsUpdate=true;
+  });
+ },
+ moon(g,L,A){
+  far(g,L,0x55555f);
+  const crm=mat(0x6a6a75);
+  for(let x=-10;x<L+10;x+=3+rnd()*4){const r=.5+rnd()*1.3;const c=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.2,.1,16),crm);c.position.set(x,.02,-6-rnd()*16);g.add(c)}
+  const N=700,pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){pos[i*3]=rnd()*(L+80)-40;pos[i*3+1]=4+rnd()*50;pos[i*3+2]=-70+rnd()*35}
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  g.add(new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.25,fog:false})));
+  const mb=new THREE.Mesh(new THREE.SphereGeometry(5,24,16),new THREE.MeshBasicMaterial({color:0xfff3c4,fog:false}));g.add(mb);
+  const pl=new THREE.Group();
+  const ps=new THREE.Mesh(new THREE.SphereGeometry(2.5,20,14),mat(0xffb74d));
+  const ring=new THREE.Mesh(new THREE.RingGeometry(3.4,5,40),new THREE.MeshBasicMaterial({color:0xffe0b2,side:THREE.DoubleSide,transparent:true,opacity:.7}));ring.rotation.x=1.2;
+  pl.add(ps,ring);g.add(pl);
+  A.push(t=>{mb.position.set(camLook.x+14,18,-70);pl.position.set(camLook.x*.8-6,11,-50);pl.rotation.y=t*.1});
+ },
+ castle(g,L,A){
+  far(g,L,0x1c1c24);
+  const stone=mat(0x3d3d48,{flatShading:true});
+  const wall=box(L+40,5,1,stone);wall.position.set(L/2,2.5,-5.5);wall.castShadow=false;g.add(wall);
+  for(let x=-18;x<L+20;x+=1.2){const b=box(.6,.6,1,stone);b.position.set(x,5.3,-5.5);b.castShadow=false;g.add(b)}
+  const fl=[],flm=new THREE.MeshBasicMaterial({color:0xffa726});
+  for(let x=2;x<L;x+=5){
+   const st=box(.1,.5,.1,mat(0x5d4037));st.position.set(x,2.2,-4.9);g.add(st);
+   const f=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),flm);f.position.set(x,2.55,-4.9);g.add(f);fl.push(f);
+  }
+  const winM=new THREE.MeshBasicMaterial({color:0xffd54f});
+  for(let i=0;i<9;i++){
+   const h=8+rnd()*6,x=-10+i*(L+20)/8,z=-18-rnd()*6;
+   const tw=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.3,h,10),stone);tw.position.set(x,h/2,z);g.add(tw);
+   const rf=new THREE.Mesh(new THREE.ConeGeometry(1.6,2.6,10),mat(0x4a148c));rf.position.set(x,h+1.3,z);g.add(rf);
+   const w=new THREE.Mesh(new THREE.BoxGeometry(.3,.5,.1),winM);w.position.set(x,h*.7,z+1.25);g.add(w);
+  }
+  let next=null,flash=0;
+  A.push((t,dt)=>{
+   fl.forEach((f,i)=>{const s=1+Math.sin(t*14+i*2)*.2;f.scale.set(s,s*1.3,s)});
+   if(next===null)next=t+2;
+   if(t>next){flash=.28;next=t+3+Math.random()*5}
+   if(flash>0){flash-=dt;hemi.intensity=stage.hemi[2]+(Math.random()>.35?1.6:0)}else hemi.intensity=stage.hemi[2];
+  });
+ }
+};
+
+// ================== 맵 생성 (원본 로직) ==================
+function makePlatforms(){
+ let a=[];
+ for(let x=180,i=0;x<stage.w-240;x+=280,i++){
+  a.push({x,y:[245,215,260,205,240,220][i%6],w:[150,130,170,120,180,160][i%6],h:16,color:stage.plat});
+ }
+ return a;
+}
+function makeEnemies(){
+ let a=[];
+ for(let x=520,i=0;x<stage.w-350;x+=420,i++){
+  // 낮은 발판 바로 밑에 갇혀서 밟을 수 없는 몹은 발판 사이 빈틈으로 옮긴다
+  const hx=reachable(x)?x:nearestGap(x);
+  a.push({x:hx,y:GROUND-50,w:50,h:50,vx:(i%2?-1:1)*stage.speed,alive:true,homeX:hx,dieAt:0});
+ }
+ return a;
+}
+// 몹이 순찰하는 동안 발판에 가려지지 않고 드러나는 폭이 충분한지 검사
+function exposed(x){
+ let open=50;
+ for(const p of platforms){const o=Math.min(x+50,p.x+p.w)-Math.max(x,p.x);if(o>0)open-=o}
+ return open;
+}
+function reachable(home){
+ let best=0;for(let x=home-70;x<=home+70;x+=5)best=Math.max(best,exposed(x));
+ return best>=35;
+}
+function nearestGap(home){
+ let best=home,bd=1e9;
+ const ps=[...platforms].sort((a,b)=>a.x-b.x);
+ for(let i=0;i<ps.length-1;i++){
+  const g0=ps[i].x+ps[i].w,g1=ps[i+1].x;if(g1-g0<80)continue;
+  const c=(g0+g1)/2-25;
+  if(reachable(c)&&Math.abs(c-home)<bd){bd=Math.abs(c-home);best=c}
+ }
+ return best;
+}
+function makeCoins(){
+ let a=[];
+ for(let x=250,i=0;x<stage.w-250;x+=230,i++)a.push({x,y:[215,185,230,175][i%4],got:false});
+ return a;
+}
+function makeItems(){
+ let a=[];
+ if(stage.id==="ground")a.push({x:1100,y:170,w:40,h:40,type:"tiger",got:false});
+ if(stage.id==="moon")a.push({x:950,y:180,w:40,h:40,type:"rocket",got:false});
+ return a;
+}
+
+let level=null,bossM=null,portal=null;
+function clearLevel(){
+ if(!level)return;
+ scene.remove(level);
+ level.traverse(o=>{
+  if(o.geometry&&o.geometry!==blobGeo&&!o.isSprite)o.geometry.dispose(); // 스프라이트는 three.js가 모양을 공유하므로 지우지 않음
+  if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());
+ });
+ level=null;
+}
+function buildLevel(){
+ clearLevel();clearParts();
+ seed=7+si*131;
+ level=new THREE.Group();level.userData.anim=[];scene.add(level);
+ const st=stage,L=st.w*S;
+ scene.background=new THREE.Color(st.bg);
+ scene.fog=new THREE.Fog(st.bg,st.fog[0],st.fog[1]);
+ hemi.color.set(st.hemi[0]);hemi.groundColor.set(st.hemi[1]);hemi.intensity=st.hemi[2];
+ sun.color.set(st.sun[0]);sun.intensity=st.sun[1];
+ lamp.intensity=st.lamp?1.4:0;
+
+ const grass=box(L+40,.4,8,mat(st.floor));grass.position.set(L/2,-.2,-1);grass.castShadow=false;level.add(grass);
+ const soil=box(L+40,4,8,mat(st.soil));soil.position.set(L/2,-2.4,-1);soil.castShadow=false;level.add(soil);
+
+ for(const p of platforms){
+  const top=(GROUND-p.y)*S;
+  const m=box(p.w*S,p.h*S,2.2,mat(p.color));m.position.set((p.x+p.w/2)*S,top-p.h*S/2,0);level.add(m);
+  const lip=box(p.w*S+.02,.05,2.22,mat(0xffffff,{roughness:.6}));lip.position.set(m.position.x,top-.02,0);lip.castShadow=false;level.add(lip);
+ }
+ for(const e of enemies){e.mesh=emojiSprite(st.enemy,1.15);e.blob=blob(.42);level.add(e.mesh,e.blob)}
+ for(const k of coins){k.mesh=emojiSprite(st.coin,.55);k.mesh.position.set(k.x*S,(GROUND-k.y)*S,0);level.add(k.mesh)}
+ for(const it of items){
+  it.mesh=emojiSprite(it.type==="tiger"?"🐯":"🚀",.95);level.add(it.mesh);
+  it.ring=new THREE.Mesh(new THREE.TorusGeometry(.6,.04,8,30),new THREE.MeshBasicMaterial({color:0xfff176}));level.add(it.ring);
+ }
+ bossM=null;
+ if(boss){bossM=makeCat(0x7e57c2,0x311b92,{boss:true});bossM.g.scale.setScalar(1.16);level.add(bossM.g)}
+ portal=new THREE.Group();
+ const ps=emojiSprite(st.next,.95);ps.position.y=.65;
+ const pr=new THREE.Mesh(new THREE.TorusGeometry(.8,.07,10,40),mat(0xffffff,{emissive:0x80d8ff,emissiveIntensity:.8}));pr.position.y=.8;
+ portal.add(ps,pr);portal.userData.ring=pr;portal.position.set((st.w-50)*S,0,0);level.add(portal);
+
+ DECOR[st.id](level,L,level.userData.anim);
+}
+
+function showBanner(t){banner.textContent=t;banner.classList.remove("go");void banner.offsetWidth;banner.classList.add("go")}
+
+let camSnap=true;
+function loadStage(n){
+ si=n;stage=STAGES[si];
+ platforms=makePlatforms();enemies=makeEnemies();totalEnemyCount+=enemies.length;
+ coins=makeCoins();items=makeItems();boss=null;
+ if(stage.id==="castle")boss={x:stage.w-430,y:GROUND-58,w:58,h:58,hp:3,alive:true,vx:1.9,homeX:stage.w-430};
+ cat.x=60;cat.y=stage.id==="moon"?160:GROUND-50;cat.vx=0;cat.vy=0;cat.onGround=false;cat.face=1;
+ tigerUntil=0;rocketUntil=0;
+ buildLevel();camSnap=true;showBanner(stage.name);
+ if(mode==="3d")MUSIC.play(stage.id);
+}
+
+function reset(){
+ cat={x:60,y:GROUND-50,w:50,h:50,vx:0,vy:0,onGround:false,face:1};
+ hp=MAX_HP;lives=MAX_LIVES;score=0;killCount=0;totalEnemyCount=0;genocideEnding=false;
+ gameOver=false;clear=false;endingMode=false;endingStart=0;iFrameUntil=0;tigerUntil=0;rocketUntil=0;
+ ov.className="";ov.innerHTML="";ov.dataset.mode="";endIdx=-1;
+ loadStage(0);
+}
+
+function damage(now){
+ if(now<iFrameUntil)return;
+ hp--;iFrameUntil=now+IFRAME;cat.vy=-6;
+ if(hp>0)SFX.play("hurt");
+ burst((cat.x+25)*S,(GROUND-cat.y-25)*S,0xff5252,8,.7);
+ if(hp<=0){
+  lives--;
+  if(lives<=0){gameOver=true;MUSIC.stop();SFX.play("gameOver")}
+  else{SFX.play("lifeLost");hp=MAX_HP;cat.x=60;cat.y=stage.id==="moon"?160:GROUND-50;cat.vx=0;cat.vy=0;camSnap=true}
+ }
+}
+
+function resolve(){
+ cat.onGround=false;
+ if(cat.y+cat.h>=GROUND){cat.y=GROUND-cat.h;cat.vy=0;cat.onGround=true}
+ for(const p of platforms){
+  const prev=(cat.y+cat.h)-cat.vy,nowY=cat.y+cat.h;
+  if(cat.vy>=0&&cat.x+cat.w>p.x&&cat.x<p.x+p.w&&prev<=p.y&&nowY>=p.y&&cat.y<p.y){cat.y=p.y-cat.h;cat.vy=0;cat.onGround=true}
+ }
+}
+
+// ================== 게임 로직 (원본과 동일, 60fps 고정) ==================
+function update(){
+ if(mode!=="3d"||gameOver||endingMode)return;
+ const now=performance.now();
+ const tiger=now<tigerUntil,rocket=now<rocketUntil;
+ const speed=tiger?5.5:3,grav=rocket?0:stage.grav,jump=rocket?-8:stage.jump;
+
+ cat.vx=0;
+ if(input.left)cat.vx=-speed;
+ if(input.right)cat.vx=speed;
+ if(cat.vx>0)cat.face=1;else if(cat.vx<0)cat.face=-1;
+ if(input.jump){if(cat.onGround||rocket){cat.vy=jump;cat.onGround=false;SFX.play(rocket?"boost":"jump")}input.jump=false}
+
+ cat.vy+=grav;
+ if(rocket&&cat.vy>1.5)cat.vy=1.5;
+ cat.x+=cat.vx;cat.y+=cat.vy;
+ cat.x=clamp(cat.x,0,stage.w-cat.w);
+ resolve();
+
+ for(const e of enemies){if(!e.alive)continue;e.x+=e.vx;if(e.x<e.homeX-70||e.x>e.homeX+70)e.vx*=-1}
+ if(boss&&boss.alive){boss.x+=boss.vx;if(boss.x<boss.homeX-90||boss.x>boss.homeX+90)boss.vx*=-1}
+ if(stage.id==="castle"){const want=boss&&boss.alive&&cat.x>boss.homeX-520?"boss":"castle";if(MUSIC.current!==want)MUSIC.play(want)}
+
+ for(const k of coins){
+  if(k.got)continue;
+  const dx=cat.x+25-k.x,dy=cat.y+25-k.y;
+  if(dx*dx+dy*dy<24*24){k.got=true;score+=10;SFX.play("coin");burst(k.x*S,(GROUND-k.y)*S,0xffd54f,6,.5)}
+ }
+ for(const it of items){
+  if(it.got||!aabb(cat,it))continue;
+  it.got=true;score+=500;
+  if(it.type==="tiger")tigerUntil=now+TIGER_TIME;else rocketUntil=now+ROCKET_TIME;
+  burst((it.x+20)*S,(GROUND-it.y-20)*S,0xfff176,16,1);SFX.play(it.type);
+ }
+ for(const e of enemies){
+  if(!e.alive||!aabb(cat,e))continue;
+  const stomp=cat.vy>0&&cat.y+cat.h-cat.vy<=e.y+8;
+  if(tiger||stomp){
+   e.alive=false;e.dieAt=now;killCount++;score+=100;cat.vy=-9;SFX.play("stomp");
+   burst((e.x+25)*S,.4,0xffffff,12,.9);
+  }else damage(now);
+ }
+ if(boss&&boss.alive&&aabb(cat,boss)){
+  const stomp=cat.vy>0&&cat.y+cat.h-cat.vy<=boss.y+10;
+  if(tiger||stomp){
+   boss.hp--;cat.vy=-10;score+=150;SFX.play(boss.hp>0?"bossHit":"bossDown");
+   burst((boss.x+29)*S,1,0xb388ff,14,1);
+   if(boss.hp<=0){boss.alive=false;score+=1000;burst((boss.x+29)*S,.8,0xffc107,40,1.6)}
+  }else damage(now);
+ }
+ if(stage.id==="castle"&&boss&&boss.alive&&cat.x>stage.w-160)cat.x=stage.w-160;
+
+ if(cat.x>stage.w-90){
+  if(si<STAGES.length-1){loadStage(si+1);SFX.play("stage")}
+  else if(!boss||!boss.alive){
+   clear=true;genocideEnding=killCount>=totalEnemyCount;endingMode=true;endingStart=performance.now();MUSIC.stop();SFX.play(genocideEnding?"sadClear":"clear");
+   setTimeout(()=>{if(mode==="3d"&&endingMode)MUSIC.play(genocideEnding?"endingSad":"ending")},genocideEnding?2200:1600);
+  }
+ }
+}
+
+// ================== 엔딩 ==================
+const LOGO=`<div class="logo">
+ <svg viewBox="0 0 323 300" aria-label="manamiwu">
+  <circle class="s1" cx="90" cy="96" r="50" fill="#fff"/>
+  <rect class="s2" x="40" y="158" width="100" height="100" fill="#fff"/>
+  <polygon class="s3" points="160,46 160,258 300,258" fill="#fff"/>
+ </svg>
+ <div class="word">manamiwu</div>
+</div>`;
+const CREDITS=`<h2>The End</h2><p class="cr">Created by<br><b>manamiwu</b></p><p class="cr">3D by<br><b>Claude</b></p><p class="cr">Special Thanks<br><b>ChatGPT 🤖</b></p>`;
+const END_NORMAL=[
+ [4,`<div class="big">😼</div><p>나는 세상이 조금 시끄러운 게 좋았어.</p>`],
+ [8,`<p>그래서 친구들을 풀어놓았지.</p><div class="mid">🐕 🦆 🐍 🕷️ 👾 🦇</div>`],
+ [11,`<p>이제 너는 혼자가 아니다.</p>`],
+ [14,`<h2>Thank you for playing</h2><div class="runner">😺</div>`],
+ [21,CREDITS],
+ [27,`<h2>The End</h2>`],
+ [29,`<div class="big">😸</div>`],
+ [Infinity,LOGO]
+];
+const END_GENOCIDE=[
+ [4,`<div class="big">😼</div><p>...다들 사라졌구나.</p>`],
+ [8,`<p>나는 평화를 원했어.<br>하지만 이런 평화는 아니었는데.</p>`],
+ [12,`<p>내가 풀어놓은 친구들은<br>세상을 외롭지 않게 하려고 있었던 거야.</p><div class="mid">🐕 🦆 🐍 🕷️ 👾 🦇</div>`],
+ [17,`<p>조용해졌네.<br>너무 조용해.</p>`],
+ [24,CREDITS],
+ [26,`<div class="big">😼</div>`],
+ [30,`<p>이번에는 다른 선택을 할 수 있을까.</p>`],
+ [Infinity,LOGO]
+];
+let endIdx=-1;
+function drawEnding(now){
+ const t=(now-endingStart)/1000,list=genocideEnding?END_GENOCIDE:END_NORMAL;
+ const i=list.findIndex(s=>t<s[0]);
+ if(i!==endIdx){if(endIdx>=0)SFX.play(list[i][1]===LOGO?"logo":"blip");endIdx=i;ov.className="show end";ov.innerHTML=`<div class="seg">${list[i][1]}</div>`}
+}
+
+// ================== 3D 동기화 & 렌더 ==================
+let camAhead=1,lastHud="";
+function sync(now,dt){
+ const t=now/1000;
+ const tiger=now<tigerUntil,rocket=now<rocketUntil;
+ const cx=(cat.x+25)*S,cy=(GROUND-cat.y-50)*S;
+
+ // 고양이
+ const g=catM.g;
+ g.position.set(cx-.05,cy,0);
+ g.scale.x+=(cat.face-g.scale.x)*Math.min(1,dt*14);
+ catM.furM.color.set(tiger?0xff9800:0xf6c343);
+ catM.stripes.visible=tiger;
+ rocketM.visible=rocket;
+ if(rocket){const f=rocketM.userData.flame;const s=.8+Math.random()*.5;f.scale.set(1,s,1)}
+ g.rotation.z=rocket?(.12-cat.vy*.02)*cat.face:0;
+ const moving=cat.vx!==0&&cat.onGround;
+ catM.phase+=dt*(tiger?20:14);
+ catM.legs.forEach((l,i)=>{l.rotation.z=moving?Math.sin(catM.phase+(i%2?Math.PI:0)+(i>1?Math.PI:0))*.6:(!cat.onGround?(i<2?.5:-.5):0)});
+ catM.tail.rotation.z=.5+Math.sin(t*6)*.2;
+ g.visible=!(now<iFrameUntil&&Math.floor(now/90)%2===0);
+
+ // 몹
+ for(const e of enemies){
+  const x=(e.x+25)*S;
+  if(e.alive){
+   e.mesh.visible=e.blob.visible=true;
+   e.mesh.position.set(x,.58+Math.abs(Math.sin(t*8+e.homeX))*.1,0);
+   e.mesh.scale.set(1.15,1.15,1);e.blob.position.set(x,.02,0);
+  }else{
+   const k=(now-e.dieAt)/250;
+   if(k<1){e.mesh.scale.set(1.15*(1+k*.5),1.15*(1-k),1);e.mesh.position.y=.58*(1-k)+.05;e.blob.visible=false}
+   else e.mesh.visible=e.blob.visible=false;
+  }
+ }
+ // 코인 (빙글빙글)
+ coins.forEach((k,i)=>{
+  k.mesh.visible=!k.got;
+  if(!k.got){k.mesh.scale.x=.55*Math.max(.12,Math.abs(Math.cos(t*3+i)));k.mesh.position.y=(GROUND-k.y)*S+Math.sin(t*2+i)*.06}
+ });
+ // 아이템
+ for(const it of items){
+  it.mesh.visible=it.ring.visible=!it.got;
+  const x=(it.x+20)*S,y=(GROUND-it.y-20)*S+Math.sin(t*2.5)*.15;
+  it.mesh.position.set(x,y,0);it.ring.position.set(x,y,0);it.ring.rotation.y=t*2;it.ring.rotation.x=t*.7;
+ }
+ // 보스
+ if(bossM){
+  bossM.g.visible=boss.alive;
+  if(boss.alive){
+   const bx=(boss.x+29)*S,f=cat.x<boss.x?-1:1;
+   bossM.g.position.set(bx,(GROUND-boss.y-58)*S,0);
+   bossM.g.scale.x+=(f*1.16-bossM.g.scale.x)*Math.min(1,dt*8);
+   bossM.phase+=dt*12;
+   bossM.legs.forEach((l,i)=>l.rotation.z=Math.sin(bossM.phase+(i%2?Math.PI:0)+(i>1?Math.PI:0))*.5);
+   bossM.tail.rotation.z=.5+Math.sin(t*4)*.3;
+  }
+ }
+ bossEl.style.display=boss&&boss.alive?"block":"none";
+ if(boss&&boss.alive)bossEl.textContent="😼 BOSS "+"♥".repeat(boss.hp)+"♡".repeat(3-boss.hp);
+ // 포탈
+ portal.userData.ring.rotation.y=t*1.5;
+ portal.children[0].position.y=.65+Math.sin(t*2)*.08;
+
+ // 카메라
+ const aspect=camera.aspect,dist=clamp(10.5/(.9326*aspect),7.5,15);
+ camAhead+=(cat.face*1.3-camAhead)*Math.min(1,dt*2.5);
+ const L=stage.w*S;
+ const target=new THREE.Vector3(clamp(cx+camAhead,3.5,L-3.5),Math.max(0,cy)*.75+1.1,0);
+ if(mode==="menu"){target.x=3.5+(Math.sin(t*.07)*.5+.5)*(L-7);target.y=1.8}
+ if(camSnap){camLook.copy(target);camSnap=false}
+ else camLook.lerp(target,1-Math.exp(-dt*5));
+ camera.position.set(camLook.x-1.1,camLook.y+2.3,dist);
+ camera.lookAt(camLook.x,camLook.y,0);
+ sun.position.set(camLook.x+5,12,9);sun.target.position.set(camLook.x,0,0);
+ lamp.position.set(cx,cy+1.3,1.6);
+
+ level.userData.anim.forEach(f=>f(t,dt));
+
+ // 파티클
+ for(let i=parts.length-1;i>=0;i--){
+  const p=parts[i];p.life-=dt;
+  if(p.life<=0){scene.remove(p.m);p.m.material.dispose();parts.splice(i,1);continue}
+  p.vy-=12*dt;p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;
+  p.m.rotation.x+=dt*8;p.m.scale.setScalar(p.life/.7);
+ }
+
+ // HUD
+ let s=`${stage.name}\nCMO 3D\nSCORE:${score}\nHP:${"♥".repeat(hp)}${"♡".repeat(MAX_HP-hp)}\nLIVES:${lives}\nMAP:${Math.floor(cat.x)}/${stage.w}\nKILLS:${killCount}/${totalEnemyCount}`;
+ if(tiger)s+=`\n🐯 야생의 돌아옴:${Math.ceil((tigerUntil-now)/1000)}초`;
+ if(rocket)s+=`\n🚀 비행:${Math.ceil((rocketUntil-now)/1000)}초`;
+ if(s!==lastHud){hudEl.textContent=s;lastHud=s}
+
+ if(gameOver&&ov.dataset.mode!=="over"){
+  ov.dataset.mode="over";ov.className="show over";
+  ov.innerHTML=`<h1>GAME OVER</h1><p>🔁 눌러서 다시 시작</p>`;
+ }
+}
+
+// ================== 🔊 효과음 (파일 없이 Web Audio로 직접 합성) ==================
+const SFX=(()=>{
+ let ac=null,master=null,muted=false,noiseBuf=null;
+ try{muted=localStorage.getItem("cmo-muted")==="1"}catch(e){}
+ function init(){
+  if(!ac){
+   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+   ac=new AC();master=ac.createGain();master.gain.value=.4;master.connect(ac.destination);
+   noiseBuf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);
+   const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  if(ac.state==="suspended")ac.resume();
+ }
+ function tone(f0,f1,dur,type="square",vol=.2,delay=0){
+  if(!ac||muted)return;
+  const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.setValueAtTime(f0,t);
+  if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.03);
+ }
+ function noise(dur,vol=.25,freq=1000,delay=0,sweep=0){
+  if(!ac||muted)return;
+  const t=ac.currentTime+delay,src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();
+  src.buffer=noiseBuf;f.type="bandpass";f.frequency.setValueAtTime(freq,t);f.Q.value=1.2;
+  if(sweep)f.frequency.exponentialRampToValueAtTime(sweep,t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  src.connect(f);f.connect(g);g.connect(master);src.start(t);src.stop(t+dur+.03);
+ }
+ const seq=(notes,step,type,vol,len)=>notes.forEach((f,i)=>f&&tone(f,null,len||step*1.1,type,vol,i*step));
+ const P={
+  select:()=>{tone(660,null,.06,"square",.12);tone(990,null,.1,"square",.12,.06)},
+  jump:()=>tone(280,620,.16,"square",.13),
+  boost:()=>{noise(.25,.22,500,0,2500);tone(200,500,.2,"sawtooth",.06)},
+  coin:()=>{tone(988,null,.07,"square",.12);tone(1319,null,.2,"square",.12,.07)},
+  stomp:()=>{tone(420,80,.16,"square",.2);noise(.09,.18,900)},
+  tiger:()=>{seq([523,659,784,1047,1319],.07,"square",.14);noise(.4,.12,3000,.1)},
+  rocket:()=>{seq([392,523,659,784],.07,"triangle",.18);noise(.6,.2,400,.1,3000)},
+  hurt:()=>{tone(260,90,.3,"sawtooth",.2);noise(.12,.15,300)},
+  lifeLost:()=>seq([523,440,370,294],.13,"sawtooth",.15),
+  bossHit:()=>{tone(170,55,.35,"sawtooth",.25);noise(.25,.3,350)},
+  bossDown:()=>{noise(.9,.35,250,0,80);tone(120,40,.8,"sawtooth",.2);seq([0,0,0,523,659,784,1047],.1,"triangle",.2,.3)},
+  stage:()=>seq([659,784,988,1319],.09,"triangle",.18,.2),
+  gameOver:()=>seq([392,330,262,196],.3,"triangle",.22,.45),
+  clear:()=>seq([392,494,587,784,988],.18,"triangle",.14,.9),
+  sadClear:()=>seq([440,415,392,370,349],.35,"triangle",.14,.6),
+  blip:()=>tone(880,null,.08,"triangle",.08),
+  logo:()=>{tone(523,null,.14,"triangle",.18,.2);tone(659,null,.14,"triangle",.18,.55);tone(784,null,.3,"triangle",.18,.9);tone(1047,null,.5,"sine",.12,1.5)}
+ };
+ return{
+  init,
+  play(n){init();if(P[n])P[n]()},
+  toggle(){muted=!muted;try{localStorage.setItem("cmo-muted",muted?"1":"0")}catch(e){}return muted},
+  get muted(){return muted},
+  get ctx(){return ac},
+  get out(){return master},
+  get noiseBuffer(){return noiseBuf}
+ };
+})();
+
+// ================== 🎵 배경음악 (맵별 칩튠, 직접 작곡 · 보스방은 차이콥스키 '백조의 호수' 주제) ==================
+// 표기: 음이름(예: C5, F#4, Bb3) = 새 음 / "-" = 앞 음 늘이기 / "." = 쉼표
+// 드럼: k=킥 s=스네어 h=하이햇 .=쉼
+const SONGS={
+ // 🏠 시작 화면: 가볍고 느긋한 스포츠 게임 메뉴풍 (직접 작곡)
+ menu:{bpm:116,spb:2,tracks:[
+  {wave:"triangle",vol:.16,notes:`
+   C5 . F5 . A5 . G5 F5 | G5 . C5 . . . E5 F5 | G5 . Bb5 . A5 . G5 F5 | A5 - - . . . . . |
+   D5 . F5 . A5 . C6 . | Bb5 . A5 G5 . . F5 G5 | A5 . G5 . F5 . E5 . | F5 - - . C5 . . .`},
+  {wave:"square",vol:.03,notes:`
+   . . A4 . . . C5 . | . . Bb4 . . . G4 . | . . Bb4 . . . E4 . | . . A4 . . . C5 . |
+   . . F4 . . . A4 . | . . D5 . . . F4 . | . . Bb4 . . . G4 . | . . A4 . . . . .`},
+  {wave:"sine",vol:.16,notes:`
+   F2 . A2 . C3 . A2 . | C3 . E3 . G3 . E3 . | C3 . G2 . Bb2 . C3 . | F2 . C3 . F3 . E3 . |
+   D3 . A2 . D3 . F3 . | Bb2 . D3 . F3 . D3 . | C3 . E3 . G3 . E3 . | F2 . C3 . F2 . . .`}],
+  drums:"k . h . s . h h |".repeat(8),drumVol:.6},
+ // 🌳 초원: 통통 튀는 밝은 C장조 행진 (휴대용 게임기 1스테이지 느낌)
+ ground:{bpm:150,spb:2,tracks:[
+  {wave:"square",vol:.07,notes:`
+   E5 . G5 . C6 - B5 A5 | G5 . E5 . C5 - . . | F5 . A5 . D6 - C6 B5 | A5 . F5 . D5 - . .
+   E5 G5 C6 . G5 E5 G5 . | A5 - G5 - E5 - D5 - | C5 . E5 D5 . C5 D5 . | C5 - - - . . G4 .`},
+  {wave:"triangle",vol:.16,notes:`
+   C3 . G3 . C3 . G3 . | C3 . G3 . E3 . G3 . | F3 . C4 . F3 . C4 . | D3 . A3 . G3 . B3 .
+   C3 . G3 . C3 . E3 . | F3 . C4 . G3 . D4 . | A2 . E3 . G2 . D3 . | C3 . G3 . C3 . . .`}],
+  drums:"k . h . s . h . |".repeat(8)},
+ // ☁️ 하늘: 둥실둥실 3/4 왈츠 (물속을 떠다니는 느낌)
+ sky:{bpm:132,spb:2,tracks:[
+  {wave:"triangle",vol:.13,notes:`
+   F5 - - - E5 F5 | G5 - - - A5 - | F5 - D5 - C5 - | A4 - - - - . |
+   Bb4 - - - A4 Bb4 | C5 - - - D5 - | E5 - G5 - E5 - | F5 - - - - .`},
+  {wave:"sine",vol:.14,notes:`
+   F2 . A3 . C4 . | C3 . G3 . Bb3 . | D3 . F3 . A3 . | F2 . A3 . C4 . |
+   Bb2 . D3 . F3 . | C3 . E3 . G3 . | C3 . E3 . Bb3 . | F2 . A3 . C4 .`}],
+  drums:"k . h . h . |".repeat(8),drumVol:.5},
+ // 🪨 동굴: 이국적인 사막풍 선율 (E 프리지안 도미넌트 음계)
+ cave:{bpm:138,spb:2,tracks:[
+  {wave:"square",vol:.065,notes:`
+   E5 . F5 G#5 . F5 E5 . | F5 . E5 D5 . C5 B4 . | C5 . D5 E5 . F5 G#5 . | A5 - G#5 F5 E5 - . . |
+   B5 . A5 G#5 . F5 G#5 . | A5 . G#5 F5 . E5 F5 . | G#5 F5 E5 D5 C5 B4 C5 D5 | E5 - - - . . . .`},
+  {wave:"triangle",vol:.17,notes:`
+   E2 . B2 . E2 E2 B2 . | E2 . B2 . E2 E2 B2 . | A2 . E3 . A2 A2 E3 . | A2 . E3 . A2 A2 E3 . |
+   E2 . B2 . E2 E2 B2 . | D2 . A2 . D2 D2 A2 . | C3 . G2 . B2 . B2 . | E2 . B2 . E2 . . .`}],
+  drums:"k . . k s . h . |".repeat(8)},
+ // 🔥 화산: 긴장감 있는 반음계 성(城) 스타일
+ volcano:{bpm:168,spb:2,tracks:[
+  {wave:"square",vol:.06,notes:`
+   D5 C#5 D5 . F5 E5 F5 . | D5 C#5 D5 . G5 F#5 G5 . | D5 C#5 D5 . Bb5 A5 Bb5 . | A5 G#5 A5 . E5 D#5 E5 . |
+   D5 . F5 . Ab5 . F5 . | C#5 . E5 . G5 . E5 . | D5 D#5 E5 F5 F#5 G5 G#5 A5 | D5 - - . D4 . . .`},
+  {wave:"triangle",vol:.17,notes:`
+   D3 C#3 D3 . D3 C#3 D3 . | D3 C#3 D3 . Eb3 D3 Eb3 . | D3 C#3 D3 . G3 F#3 G3 . | A2 G#2 A2 . A2 G#2 A2 . |
+   Bb2 . Bb2 . Bb2 . Bb2 . | A2 . A2 . A2 . A2 . | D3 D#3 E3 F3 F#3 G3 G#3 A3 | D2 - - . D2 . . .`}],
+  drums:"k h k h s h k h |".repeat(8)},
+ // 🌙 달: 느리고 몽환적인 우주 (요청 없던 맵이라 분위기에 맞춰 새로)
+ moon:{bpm:84,spb:2,tracks:[
+  {wave:"sine",vol:.14,notes:`
+   E5 - - - G5 - - - | F#5 - - - D5 - - - | E5 - G5 - B5 - - - | A5 - - - - - . . |
+   G5 - - - E5 - - - | F#5 - - - A5 - - - | G5 - F#5 - D5 - E5 - | E5 - - - - - . .`},
+  {wave:"triangle",vol:.11,notes:`
+   C3 G3 C4 G3 C3 G3 C4 G3 | D3 A3 D4 A3 D3 A3 D4 A3 | C3 G3 C4 G3 C3 G3 C4 G3 | A2 E3 A3 E3 A2 E3 A3 E3 |
+   C3 G3 C4 G3 C3 G3 C4 G3 | D3 A3 D4 A3 D3 A3 D4 A3 | B2 F#3 B3 F#3 B2 F#3 B3 F#3 | E3 B3 E4 B3 E3 B3 E4 B3`}],
+  drums:""},
+ // 🏰 성: 차이콥스키 '백조의 호수' 주제를 느리고 으스스하게
+ castle:{bpm:72,spb:2,tracks:[
+  {wave:"square",vol:.05,double:-12,notes:`
+   F#5 - - - - - - - | B4 C#5 D5 E5 F#5 - - - | D5 - F#5 - - - - - | D5 - F#5 - - - - - |
+   B4 - D5 - B4 - G4 - | D5 - B4 - - - - - | C#5 - D5 - E5 - C#5 - | B4 - - - - - - -`},
+  {wave:"triangle",vol:.15,notes:`
+   B2 . F#3 . B2 . F#3 . | B2 . F#3 . B2 . F#3 . | B2 . F#3 . B2 . F#3 . | B2 . F#3 . B2 . F#3 . |
+   G2 . D3 . G2 . D3 . | F#2 . C#3 . F#2 . C#3 . | E2 . B2 . F#2 . C#3 . | B2 - - - - - - -`}],
+  drums:"k . . . . . . . |".repeat(8),drumVol:.7},
+ // 🌅 일반 엔딩: 잔잔하고 따뜻한 자장가풍 (직접 작곡)
+ ending:{bpm:76,spb:2,tracks:[
+  {wave:"triangle",vol:.15,notes:`
+   B4 - D5 - G5 - - - | F#5 - E5 - D5 - - - | E5 - G5 - C6 - B5 - | A5 - - - - - . . |
+   G5 - A5 - B5 - D6 - | C6 - B5 - A5 - G5 - | A5 - B5 - A5 - F#5 - | G5 - - - - - . .`},
+  {wave:"sine",vol:.11,notes:`
+   G2 D3 B3 D3 G2 D3 B3 D3 | D3 A3 F#3 A3 D3 A3 F#3 A3 | C3 G3 E3 G3 C3 G3 E3 G3 | D3 A3 F#3 A3 D3 A3 C4 A3 |
+   E3 B3 G3 B3 E3 B3 G3 B3 | C3 G3 E3 G3 A2 E3 C3 E3 | D3 A3 F#3 A3 D3 A3 F#3 A3 | G2 D3 B2 D3 G2 . . .`}],
+  drums:""},
+ // 🌑 전멸 엔딩: 쓸쓸한 오르골 (직접 작곡)
+ endingSad:{bpm:70,spb:2,tracks:[
+  {wave:"sine",vol:.14,notes:`
+   A5 - C6 - E6 - - - | D6 - C6 - B5 - - - | C6 - B5 - A5 - G#5 - | A5 - - - - - . . |
+   F5 - A5 - C6 - - - | B5 - A5 - G#5 - - - | A5 - E5 - C5 - B4 - | A4 - - - - - . .`},
+  {wave:"sine",vol:.12,notes:`
+   A2 . E3 . A3 . E3 . | D3 . A3 . D4 . A3 . | A2 . E3 . E2 . B2 . | A2 . E3 . A3 . . . |
+   F2 . C3 . F3 . C3 . | E2 . B2 . E3 . B2 . | A2 . E3 . E2 . G#2 . | A2 - - - - - . .`}],
+  drums:""},
+ // 😼 보스방: 같은 주제를 빠르게 + 쿠파방처럼 쿵쿵 몰아치는 저음
+ boss:{bpm:152,spb:2,tracks:[
+  {wave:"square",vol:.07,double:-12,notes:`
+   F#5 - - - - - - - | B4 C#5 D5 E5 F#5 - - - | D5 - F#5 - - - - - | D5 - F#5 - - - - - |
+   B4 - D5 - B4 - G4 - | D5 - B4 - - - - - | C#5 - D5 - E5 - C#5 - | B4 - - - - - - -`},
+  {wave:"triangle",vol:.2,notes:`
+   B1 B2 B1 B2 B1 B2 A#1 A#2 | B1 B2 B1 B2 B1 B2 A#1 A#2 | B1 B2 B1 B2 B1 B2 A#1 A#2 | B1 B2 B1 B2 B1 B2 A#1 A#2 |
+   G1 G2 G1 G2 G1 G2 G1 G2 | F#1 F#2 F#1 F#2 F#1 F#2 F#1 F#2 | E1 E2 F#1 F#2 G1 G2 A#1 A#2 | B1 B2 B1 B2 C2 C#2 D2 D#2`}],
+  drums:"k h k h s h k s |".repeat(8)}
+};
+
+const MUSIC=(()=>{
+ const NOTE={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+ function midi(n){const m=/^([A-G])([#b]?)(-?\d)$/.exec(n);if(!m)throw new Error("bad note "+n);return (+m[3]+1)*12+NOTE[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0)}
+ const toks=s=>s.replace(/\|/g," ").trim().split(/\s+/).filter(Boolean);
+ function parseTrack(str){
+  const tk=toks(str),at={};let last=null;
+  tk.forEach((t,i)=>{
+   if(t==="-"){if(last)last.len++}
+   else if(t==="."){last=null}
+   else{last={midi:midi(t),len:1};(at[i]=at[i]||[]).push(last)}
+  });
+  return{at,len:tk.length};
+ }
+ for(const k in SONGS){
+  const s=SONGS[k];
+  s.parsed=s.tracks.map(t=>Object.assign(parseTrack(t.notes),t));
+  s.drumTk=s.drums?toks(s.drums):[];
+ }
+ let cur=null,step=0,nextTime=0,timer=null,bus=null;
+ const hz=m=>440*Math.pow(2,(m-69)/12);
+ function voice(ac,t,m,dur,wave,vol){
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=wave;o.frequency.setValueAtTime(hz(m),t);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);
+  g.gain.setValueAtTime(vol,t+Math.max(.012,dur*.7));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+.03);
+ }
+ function drum(ac,t,d,vol){
+  if(d==="k"){
+   const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);
+   g.gain.setValueAtTime(.35*vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.14);o.connect(g);g.connect(bus);o.start(t);o.stop(t+.16);
+  }else if(d==="s"||d==="h"){
+   const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();
+   src.buffer=SFX.noiseBuffer;f.type=d==="s"?"bandpass":"highpass";f.frequency.value=d==="s"?1800:7000;
+   const len=d==="s"?.1:.035;g.gain.setValueAtTime((d==="s"?.18:.07)*vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len);
+   src.connect(f);f.connect(g);g.connect(bus);src.start(t);src.stop(t+len+.02);
+  }
+ }
+ function tick(){
+  const ac=SFX.ctx;if(!ac||!cur)return;
+  const s=SONGS[cur],sd=60/s.bpm/s.spb;
+  if(nextTime<ac.currentTime-.2)nextTime=ac.currentTime+.05; // 탭 전환 등으로 밀리면 건너뛰기
+  while(nextTime<ac.currentTime+.15){
+   if(!SFX.muted){
+    for(const tr of s.parsed){
+     const evs=tr.at[step%tr.len];if(!evs)continue;
+     for(const e of evs){
+      const dur=e.len*sd*.92;
+      voice(ac,nextTime,e.midi,dur,tr.wave,tr.vol);
+      if(tr.double)voice(ac,nextTime,e.midi+tr.double,dur,"triangle",tr.vol*1.4);
+     }
+    }
+    if(s.drumTk.length){const d=s.drumTk[step%s.drumTk.length];if(d!==".")drum(ac,nextTime,d,s.drumVol||1)}
+   }
+   step++;nextTime+=sd;
+  }
+ }
+ function play(name){
+  if(name===cur)return;
+  cur=name;step=0;
+  if(!name)return;
+  SFX.init();const ac=SFX.ctx;if(!ac)return;
+  if(!bus){bus=ac.createGain();bus.gain.value=.55;bus.connect(SFX.out)}
+  nextTime=ac.currentTime+.08;
+  if(!timer)timer=setInterval(tick,25);
+ }
+ function stop(){cur=null}
+ return{play,stop,get current(){return cur}};
+})();
+
+let last=performance.now(),acc=0;const STEP=1000/60;
+function loop(now){
+ const dt=Math.min(100,now-last);last=now;acc+=dt;
+ while(acc>=STEP){update();acc-=STEP}
+ if(endingMode)drawEnding(now);
+ else sync(now,dt/1000);
+ renderer.render(scene,camera);
+ requestAnimationFrame(loop);
+}
+// ================== 시작 화면 / 모드 전환 ==================
+let mode="menu";
+const startEl=$("start"),origEl=$("orig"),homeEl=$("home");
+function goMenu(){
+ // 엔딩을 본 뒤에는 페이지를 새로 불러와서 완전히 깨끗한 새 게임으로 시작
+ if(clear){location.reload();return}
+ mode="menu";MUSIC.play("menu");
+ origEl.classList.remove("show");origEl.innerHTML=""; // 2D 게임 정지
+ homeEl.classList.remove("show");muteEl.classList.add("show");
+ startEl.classList.remove("hide");
+ kb.back=kb.fwd=false;input.left=input.right=input.jump=false;
+ reset();
+ $("play3d").focus();
+}
+const muteEl=$("mute");
+function drawMute(){muteEl.textContent=SFX.muted?"🔇":"🔊"}
+muteEl.onclick=e=>{e.currentTarget.blur();SFX.toggle();drawMute();SFX.play("select");if(mode==="menu")MUSIC.play("menu")};
+drawMute();
+muteEl.classList.add("show");
+// 브라우저는 사용자가 한 번 누르기 전엔 소리를 막으니, 시작 화면에서 첫 터치/키 입력 때 음악 시작
+function menuMusic(e){
+ if(mode!=="menu")return;
+ if(e&&e.target&&e.target.closest&&e.target.closest(".choice,#mute"))return;
+ MUSIC.play("menu");
+}
+addEventListener("pointerdown",menuMusic);
+addEventListener("keydown",menuMusic);
+addEventListener("keydown",e=>{if(mode==="menu"&&e.code==="KeyM"&&!e.repeat){SFX.toggle();drawMute()}});
+function play3D(){
+ SFX.play("select");
+ mode="3d";startEl.classList.add("hide");homeEl.classList.add("show");muteEl.classList.add("show");
+ reset();window.focus();
+}
+function play2D(){
+ SFX.play("select");MUSIC.stop();muteEl.classList.remove("show");
+ mode="2d";startEl.classList.add("hide");homeEl.classList.add("show");
+ const f=document.createElement("iframe");f.title="CMO 2D 오리지널";
+ f.srcdoc=$("orig2d").textContent.replace(/<\\\/script>/g,"<"+"/script>");
+ origEl.appendChild(f);origEl.classList.add("show");
+ setTimeout(()=>{try{f.focus()}catch(e){}},50);
+}
+$("play3d").onclick=play3D;
+$("play2d").onclick=play2D;
+homeEl.onclick=goMenu;
+
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

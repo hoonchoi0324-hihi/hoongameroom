@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>풀길 산책</title>
+<style>
+:root{
+  --bg:#2f5a28; --ink:#f6f1dc; --panel:rgba(24,36,20,.78); --line:rgba(246,241,220,.25);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#1d3818; } }
+:root[data-theme="dark"]{ --bg:#1d3818; }
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg);}
+body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+#stage{position:relative;height:100%;overflow:hidden;}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
+#hud{position:absolute;left:12px;top:12px;max-width:calc(100% - 24px);padding:9px 13px;border-radius:10px;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);
+  font:13px/1.45 "Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;transition:opacity .8s ease;pointer-events:none;}
+#hud b{display:block;font-size:15px;letter-spacing:.02em;margin-bottom:2px;}
+#hud.hide{opacity:0;}
+.stick{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35);display:none;pointer-events:none;}
+.stick i{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;
+  background:rgba(255,255,255,.55);}
+@media (prefers-reduced-motion: reduce){ #hud{transition:none;} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+  <div id="hud"><b>풀길 산책</b><span id="hint"></span></div>
+  <div class="stick" id="stick"><i id="knob"></i></div>
+</div>
+<script>
+(() => {
+const TS = 16, MW = 72, MH = 54;
+const GRASS=0, PATH=1, WATER=2, TREE=3, FLOWER=4, TALL=5, STONE=6, SAND=7;
+
+/* ---------- 랜덤 ---------- */
+let seed = 20261001;
+function rnd(){ seed = (Math.imul(seed,1664525)+1013904223)>>>0; return seed/4294967296; }
+function ri(a,b){ return a + Math.floor(rnd()*(b-a+1)); }
+function hash(x,y,k){
+  let n = (Math.imul(x|0,374761393) + Math.imul(y|0,668265263) + Math.imul(k|0,1442695041))|0;
+  n = Math.imul(n^(n>>>13),1274126177); n ^= n>>>16; return (n>>>0)/4294967296;
+}
+
+/* ---------- 맵 생성 ---------- */
+const map = new Uint8Array(MW*MH);
+const get = (x,y) => (x<0||y<0||x>=MW||y>=MH) ? TREE : map[y*MW+x];
+const set = (x,y,v) => { if(x>=0&&y>=0&&x<MW&&y<MH) map[y*MW+x]=v; };
+
+for(let i=0;i<MW*MH;i++) map[i] = rnd()<0.045 ? FLOWER : GRASS;
+for(let k=0;k<22;k++){
+  const cx=ri(3,MW-4), cy=ri(3,MH-4), r=ri(2,4);
+  for(let y=-r;y<=r;y++) for(let x=-r;x<=r;x++)
+    if(x*x+y*y<=r*r && rnd()<0.8) set(cx+x,cy+y,TALL);
+}
+function pond(cx,cy,rx,ry){
+  for(let y=-ry-2;y<=ry+2;y++) for(let x=-rx-2;x<=rx+2;x++){
+    const d=(x*x)/(rx*rx)+(y*y)/(ry*ry), w=(rnd()-0.5)*0.12;
+    if(d<=1+w) set(cx+x,cy+y,WATER);
+    else if(d<=1.6+w && get(cx+x,cy+y)!==WATER) set(cx+x,cy+y,SAND);
+  }
+}
+pond(50,13,7,5); pond(15,42,5,3); pond(61,42,4,3);
+
+for(let y=0;y<MH;y++) for(let x=0;x<MW;x++)
+  if((x<2||y<2||x>=MW-2||y>=MH-2) && get(x,y)!==WATER) set(x,y,TREE);
+for(let k=0;k<26;k++){
+  const cx=ri(2,MW-3), cy=ri(2,MH-3), r=ri(2,4);
+  for(let y=-r;y<=r;y++) for(let x=-r;x<=r;x++){
+    const t=get(cx+x,cy+y);
+    if(x*x+y*y<=r*r+1 && rnd()<0.62 && t!==WATER && t!==SAND) set(cx+x,cy+y,TREE);
+  }
+}
+for(let i=0;i<MW*MH;i++){
+  if((map[i]===GRASS||map[i]===FLOWER) && rnd()<0.025) map[i]=TREE;
+  else if(map[i]===GRASS && rnd()<0.012) map[i]=STONE;
+}
+
+function carve(x,y){
+  for(let dy=-1;dy<=2;dy++) for(let dx=-1;dx<=2;dx++){
+    const X=x+dx, Y=y+dy; if(X<0||Y<0||X>=MW||Y>=MH) continue;
+    const t=get(X,Y), core = dx>=0&&dx<=1&&dy>=0&&dy<=1;
+    if(core){ if(t!==WATER) set(X,Y,PATH); }
+    else if(t===TREE||t===STONE) set(X,Y,GRASS);
+  }
+}
+const mainY=[]; let py=27;
+for(let x=0;x<MW-1;x++){
+  carve(x,py); mainY[x]=py;
+  if(x%3===0){
+    const r=rnd();
+    if(r<0.3 && py>8){ py--; carve(x,py); }
+    else if(r>0.7 && py<MH-10){ py++; carve(x,py); }
+  }
+}
+function walkTo(x,y,tx,ty){
+  let guard=0;
+  while(guard++<500){
+    carve(x,y);
+    if(Math.abs(x-tx)<=1 && Math.abs(y-ty)<=1) break;
+    if((rnd()<0.5 && x!==tx) || y===ty) x+=Math.sign(tx-x); else y+=Math.sign(ty-y);
+  }
+}
+walkTo(34,mainY[34],48,20);
+walkTo(22,mainY[22],15,37);
+walkTo(56,mainY[56],60,MH-1);
+walkTo(12,mainY[12],18,0);
+
+const solid = t => t===TREE || t===WATER || t===STONE;
+const grassy = t => t===GRASS||t===FLOWER||t===TALL||t===TREE||t===STONE;
+
+/* ---------- 바닥 미리 그리기 ---------- */
+const ground=document.createElement('canvas');
+ground.width=MW*TS; ground.height=MH*TS;
+const g=ground.getContext('2d');
+const P=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w,h); };
+const C={ grass:'#5c9e4a', gDark:'#4c8a3d', gLight:'#72b65a', tall:'#559644',
+  path:'#c9a46a', pDark:'#b48e57', pLight:'#d9b984', pShade:'#a9844f',
+  sand:'#e3cd92', sDark:'#d0b77c', sLight:'#f0dfab', sShade:'#c9b07a',
+  water:'#3a7dc2', wLight:'#4a8bcd', wDeep:'#2b609a', foam:'#9cd0f0' };
+
+function grassTile(x,y,ox,oy,base){
+  P(ox,oy,16,16,base||C.grass);
+  for(let i=0;i<9;i++){
+    const px=Math.floor(hash(x,y,i)*16), py=Math.floor(hash(x,y,i+30)*15), lt=hash(x,y,i+60)<0.45;
+    P(ox+px,oy+py,1,lt?1:2,lt?C.gLight:C.gDark);
+  }
+}
+function tuft(x,y){
+  P(x,y-3,1,4,'#3b7530'); P(x-1,y-2,1,3,'#3b7530'); P(x+1,y-2,1,3,'#3b7530');
+  P(x-2,y-1,1,2,'#468a3a'); P(x+2,y-1,1,2,'#468a3a');
+  P(x,y-4,1,1,'#7cc061'); P(x-1,y-3,1,1,'#7cc061'); P(x+1,y-3,1,1,'#7cc061');
+}
+const FLOWERS=['#f4f1f6','#f2d34a','#e8607a','#b48ae0'];
+
+for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+  const t=get(x,y), ox=x*TS, oy=y*TS;
+  if(t===PATH || t===SAND){
+    const isP=t===PATH;
+    P(ox,oy,16,16,isP?C.path:C.sand);
+    for(let i=0;i<8;i++){
+      const px=Math.floor(hash(x,y,i+5)*16), py=Math.floor(hash(x,y,i+50)*16);
+      P(ox+px,oy+py,1,1, hash(x,y,i+90)<0.5 ? (isP?C.pDark:C.sDark) : (isP?C.pLight:C.sLight));
+    }
+    if(isP && hash(x,y,3)<0.35){
+      const px=ox+2+Math.floor(hash(x,y,4)*11), py=oy+3+Math.floor(hash(x,y,6)*11);
+      P(px,py,2,1,'#957548'); P(px,py-1,1,1,'#e6cc9a');
+    }
+  } else if(t===WATER){
+    P(ox,oy,16,16,C.water);
+    for(let i=0;i<5;i++) P(ox+Math.floor(hash(x,y,i+7)*14),oy+Math.floor(hash(x,y,i+70)*16),2,1,C.wLight);
+    const inner = get(x-1,y)===WATER&&get(x+1,y)===WATER&&get(x,y-1)===WATER&&get(x,y+1)===WATER;
+    if(inner && hash(x,y,12)<0.12){
+      const lx=ox+3+Math.floor(hash(x,y,13)*7), ly=oy+4+Math.floor(hash(x,y,14)*7);
+      P(lx,ly,5,3,'#3f8a3a'); P(lx+1,ly-1,3,1,'#3f8a3a'); P(lx+1,ly+3,3,1,'#3f8a3a');
+      P(lx+3,ly,1,1,C.water); P(lx+1,ly,1,1,'#73bb5c');
+      if(hash(x,y,15)<0.4) P(lx+2,ly+1,1,1,'#f2a8c0');
+    }
+  } else {
+    grassTile(x,y,ox,oy, t===TALL?C.tall:C.grass);
+    if(t===FLOWER){
+      const n=1+(hash(x,y,20)>0.5?1:0);
+      for(let k=0;k<n;k++){
+        const cx=ox+3+Math.floor(hash(x,y,21+k)*10), cy=oy+3+Math.floor(hash(x,y,31+k)*9);
+        const col=FLOWERS[Math.floor(hash(x,y,41+k)*FLOWERS.length)];
+        P(cx-1,cy,1,1,col); P(cx+1,cy,1,1,col); P(cx,cy-1,1,1,col); P(cx,cy+1,1,1,col);
+        P(cx,cy,1,1, col==='#f2d34a'?'#c8762a':'#f6d743'); P(cx,cy+2,1,1,'#3f7a33');
+      }
+    }
+    if(t===TALL) for(let k=0;k<3;k++) tuft(ox+2+Math.floor(hash(x,y,50+k)*12), oy+6+Math.floor(hash(x,y,55+k)*10));
+  }
+}
+
+/* 경계선 다듬기 */
+for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+  const t=get(x,y), ox=x*TS, oy=y*TS;
+  if(t===PATH || t===SAND){
+    const shade = t===PATH?C.pShade:C.sShade;
+    [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy],si)=>{
+      if(!grassy(get(x+dx,y+dy))) return;
+      for(let i=0;i<16;i++){
+        const d=1+Math.floor(hash(x*3+si,y*5+i,7)*2.6);
+        if(dy===-1){ P(ox+i,oy,1,d,C.grass); P(ox+i,oy+d,1,1,shade); }
+        else if(dy===1){ P(ox+i,oy+16-d,1,d,C.grass); P(ox+i,oy+16-d,1,1,C.gLight); }
+        else if(dx===-1){ P(ox,oy+i,d,1,C.grass); }
+        else { P(ox+16-d,oy+i,d,1,C.grass); }
+      }
+    });
+    [[-1,-1,0,0],[1,-1,14,0],[-1,1,0,14],[1,1,14,14]].forEach(([dx,dy,cx,cy])=>{
+      if(grassy(get(x+dx,y+dy)) && !grassy(get(x+dx,y)) && !grassy(get(x,y+dy))) P(ox+cx,oy+cy,2,2,C.grass);
+    });
+  } else if(t===WATER){
+    if(get(x,y-1)!==WATER){ P(ox,oy,16,2,C.wDeep); P(ox,oy+2,16,1,'#336fae'); }
+    if(get(x,y+1)!==WATER) P(ox,oy+15,16,1,C.foam);
+    if(get(x-1,y)!==WATER) P(ox,oy,1,16,C.foam);
+    if(get(x+1,y)!==WATER) P(ox+15,oy,1,16,C.foam);
+  } else if(t===TREE || t===STONE){
+    g.fillStyle='rgba(25,55,20,.35)';
+    if(t===TREE){ g.fillRect(ox+3,oy+11,10,4); g.fillRect(ox+1,oy+12,14,2); }
+    else { g.fillRect(ox+3,oy+13,10,2); }
+  }
+}
+
+/* ---------- 나무 / 돌 스프라이트 ---------- */
+function makeTree(v){
+  const c=document.createElement('canvas'); c.width=22; c.height=28;
+  const t=c.getContext('2d'); const p=(x,y,col)=>{ t.fillStyle=col; t.fillRect(x,y,1,1); };
+  for(let y=17;y<27;y++) for(let x=8;x<14;x++){
+    let col = (x===8||x===13||y===26) ? '#2e1c12' : x===9 ? '#4a2e1c' : x===12 ? '#5a3820' : '#6e4729';
+    p(x,y,col);
+  }
+  p(7,25,'#2e1c12'); p(14,25,'#2e1c12'); p(7,26,'#2e1c12'); p(14,26,'#2e1c12');
+  const circ = v===0 ? [[11,10,9],[5.5,13,5.5],[16.5,13,5.5]] : [[11,9,8.5],[6,14,5],[16,14,5],[11,15,6]];
+  const pal = v===0 ? ['#1f4426','#2f6a2c','#3f7f35','#58a044','#7cc25a'] : ['#1c3f2a','#2a6236','#3a7a40','#4f9a4e','#72bb62'];
+  const inside=(x,y)=>circ.some(([cx,cy,r])=>{ const dx=x+.5-cx, dy=y+.5-cy; return dx*dx+dy*dy<=r*r; });
+  for(let y=0;y<22;y++) for(let x=0;x<22;x++){
+    if(!inside(x,y)) continue;
+    if(!inside(x-1,y)||!inside(x+1,y)||!inside(x,y-1)||!inside(x,y+1)){ p(x,y,pal[0]); continue; }
+    const vv=(y-1)/19*0.75 + (x-4)/18*0.2 + hash(x,y,v+11)*0.28;
+    p(x,y,pal[vv<0.3?4:vv<0.55?3:vv<0.8?2:1]);
+  }
+  if(v===1){ [[7,9],[14,7],[11,13],[16,12],[6,15]].forEach(([x,y])=>{ p(x,y,'#e04a3a'); p(x,y-1,'#f39a85'); }); }
+  return c;
+}
+function makeStone(){
+  const c=document.createElement('canvas'); c.width=12; c.height=9;
+  const t=c.getContext('2d');
+  const inside=(x,y)=>{ const dx=(x+.5-6)/5.6, dy=(y+.5-5)/4.1; return dx*dx+dy*dy<=1; };
+  for(let y=0;y<9;y++) for(let x=0;x<12;x++){
+    if(!inside(x,y)) continue;
+    let col='#8a929b';
+    if(!inside(x-1,y)||!inside(x+1,y)||!inside(x,y-1)||!inside(x,y+1)) col='#3d4249';
+    else if(y<=3 && x<=6) col='#b4bcc4';
+    else if(y>=6) col='#6c737c';
+    t.fillStyle=col; t.fillRect(x,y,1,1);
+  }
+  return c;
+}
+const TREES=[makeTree(0),makeTree(1)], STONE_IMG=makeStone();
+const props=[];
+for(let y=0;y<MH;y++){ props[y]=[]; for(let x=0;x<MW;x++){
+  const t=get(x,y);
+  if(t===TREE) props[y].push({x,t,v:hash(x,y,77)<0.7?0:1});
+  else if(t===STONE) props[y].push({x,t});
+}}
+
+/* ---------- 플레이어 ---------- */
+const PC={o:'#2a1e26',skin:'#f3c9a0',skinS:'#dba783',hair:'#5a3424',hairL:'#7a4a30',
+  shirt:'#e0533f',shirtS:'#b23d2f',pants:'#3d5aa6',shoe:'#3a2620',blush:'#ee9a8a'};
+const player={ x:5*TS+8, y:(mainY[5]+1)*TS+6, dir:0, anim:0, frame:0, moving:false, running:false };
+
+function drawPlayer(c,px,py){
+  const {dir,frame:f,moving}=player, ox=px-8, oy=py-16;
+  const R=(r,col)=>{ c.fillStyle=col; c.fillRect(ox+r[0],oy+r[1],r[2],r[3]); };
+  const O=r=>{ c.fillStyle=PC.o; c.fillRect(ox+r[0]-1,oy+r[1]-1,r[2]+2,r[3]+2); };
+  c.fillStyle='rgba(20,35,15,.3)'; c.fillRect(px-5,py-1,10,1); c.fillRect(px-4,py,8,1);
+
+  const bob = moving && (f===1||f===3) ? -1 : 0;
+  const side = dir===1 || dir===2;
+  const legs=[], shoes=[];
+  if(!side){
+    const lo = moving&&f===1 ? -1 : 0, ro = moving&&f===3 ? -1 : 0;
+    legs.push([5,12,2,3+lo],[9,12,2,3+ro]); shoes.push([5,14+lo,2,1],[9,14+ro,2,1]);
+  } else if(moving && (f===1||f===3)){
+    legs.push([5,12,2,2],[9,12,2,3]); shoes.push([5,13,2,1],[9,14,2,1]);
+  } else {
+    legs.push([6,12,4,3]); shoes.push([6,14,4,1]);
+  }
+  const body=[4,8+bob,8,4], head=[4,1+bob,8,7];
+  const arms=[];
+  if(!side){
+    const s = moving ? (f===1?1:f===3?-1:0) : 0;
+    arms.push([3,8+bob+(s===1?1:0),1,3],[12,8+bob+(s===-1?1:0),1,3]);
+  }
+  [...legs,body,...arms,head].forEach(O);
+  legs.forEach(r=>R(r,PC.pants)); shoes.forEach(r=>R(r,PC.shoe));
+  R(body,PC.shirt); R([4,11+bob,8,1],PC.shirtS);
+  arms.forEach(r=>{ R(r,PC.skin); R([r[0],r[1],1,1],PC.shirt); });
+  R(head,PC.skin);
+  if(side){
+    const sw = moving ? (f===1?-1:f===3?1:0) : 0;
+    const ax = dir===2 ? 7+sw : 8-sw;
+    R([ax,9+bob,1,3],PC.skinS); R([ax,9+bob,1,1],PC.shirtS);
+  }
+  const b=bob, H=(x,y,w,h)=>R([x,y+b,w,h],PC.hair);
+  if(dir===0){
+    H(4,1,8,2); H(4,3,1,3); H(11,3,1,3); H(5,3,3,1); H(9,3,2,1);
+    R([6,1+b,3,1],PC.hairL);
+    R([6,4+b,1,2],PC.o); R([9,4+b,1,2],PC.o);
+    R([5,6+b,1,1],PC.blush); R([10,6+b,1,1],PC.blush);
+  } else if(dir===3){
+    H(4,1,8,6); R([6,2+b,3,1],PC.hairL); R([5,4+b,6,1],'#4b2b1e');
+  } else if(dir===1){
+    H(4,1,8,2); H(8,3,4,3); H(4,3,2,1); R([6,1+b,3,1],PC.hairL);
+    R([5,4+b,1,2],PC.o); R([6,6+b,1,1],PC.blush);
+  } else {
+    H(4,1,8,2); H(4,3,4,3); H(10,3,2,1); R([7,1+b,3,1],PC.hairL);
+    R([10,4+b,1,2],PC.o); R([9,6+b,1,1],PC.blush);
+  }
+}
+
+/* ---------- 입력 ---------- */
+const keys={};
+const KM={ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ShiftLeft:'run',ShiftRight:'run'};
+addEventListener('keydown',e=>{ const k=KM[e.code]; if(k){ keys[k]=true; e.preventDefault(); } });
+addEventListener('keyup',e=>{ const k=KM[e.code]; if(k) keys[k]=false; });
+addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; });
+
+const stage=document.getElementById('stage'), stick=document.getElementById('stick'), knob=document.getElementById('knob');
+const joy={id:null,sx:0,sy:0,dx:0,dy:0};
+const MAXR=44;
+stage.addEventListener('pointerdown',e=>{
+  if(joy.id!==null) return;
+  joy.id=e.pointerId; joy.sx=e.clientX; joy.sy=e.clientY; joy.dx=joy.dy=0;
+  const r=stage.getBoundingClientRect();
+  stick.style.left=(e.clientX-r.left)+'px'; stick.style.top=(e.clientY-r.top)+'px';
+  stick.style.display='block'; knob.style.transform='translate(0,0)';
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{
+  if(e.pointerId!==joy.id) return;
+  let dx=e.clientX-joy.sx, dy=e.clientY-joy.sy; const l=Math.hypot(dx,dy);
+  if(l>MAXR){ dx*=MAXR/l; dy*=MAXR/l; }
+  joy.dx=dx; joy.dy=dy; knob.style.transform=`translate(${dx}px,${dy}px)`;
+});
+const endJoy=e=>{ if(e.pointerId!==joy.id) return; joy.id=null; joy.dx=joy.dy=0; stick.style.display='none'; };
+stage.addEventListener('pointerup',endJoy); stage.addEventListener('pointercancel',endJoy);
+
+const coarse=matchMedia('(pointer:coarse)').matches;
+document.getElementById('hint').textContent = coarse
+  ? '화면을 누르고 끌어서 걷기, 멀리 끌면 달리기'
+  : '방향키나 WASD로 걷기, Shift로 달리기 (마우스로 끌어도 돼요)';
+const hud=document.getElementById('hud'); let hudTimer=null;
+
+/* ---------- 화면 ---------- */
+const cvs=document.getElementById('game'), ctx=cvs.getContext('2d');
+let VW=0, VH=0;
+function resize(){
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const scale=Math.max(2,Math.min(5,Math.floor(Math.min(W,H)/170)));
+  VW=Math.ceil(W/scale); VH=Math.ceil(H/scale);
+  cvs.width=VW; cvs.height=VH;
+  cvs.style.width=VW*scale+'px'; cvs.style.height=VH*scale+'px';
+  ctx.imageSmoothingEnabled=false;
+}
+addEventListener('resize',resize); resize();
+
+/* ---------- 파티클 / 나비 ---------- */
+const parts=[];
+function spawn(x,y,col,n,up){
+  for(let i=0;i<n;i++) parts.push({x:x+(Math.random()-.5)*6,y,vx:(Math.random()-.5)*24,vy:-up-Math.random()*10,life:.4,max:.4,col});
+}
+const flies=[];
+for(let i=0;i<6;i++){
+  flies.push({x:player.x+(Math.random()-.5)*300,y:player.y+(Math.random()-.5)*200,a:Math.random()*6.28,t:Math.random()*5,
+    col:['#f4f1f6','#f2d34a','#f2a8c0','#9fd0f2'][i%4]});
+}
+
+/* ---------- 이동 / 충돌 ---------- */
+function blockedAt(x,y){
+  const pts=[[x-4,y-3],[x+3,y-3],[x-4,y],[x+3,y]];
+  return pts.some(([px,py])=>solid(get(Math.floor(px/TS),Math.floor(py/TS))));
+}
+let last=performance.now(), time=0;
+
+function update(dt){
+  let ix=(keys.r?1:0)-(keys.l?1:0), iy=(keys.d?1:0)-(keys.u?1:0);
+  let run=!!keys.run;
+  const jl=Math.hypot(joy.dx,joy.dy);
+  if(joy.id!==null && jl>8){ ix=joy.dx/MAXR; iy=joy.dy/MAXR; if(jl>=MAXR-4) run=true; }
+  const len=Math.hypot(ix,iy);
+  player.moving=len>0.05; player.running=run && player.moving;
+  if(player.moving){
+    if(len>1){ ix/=len; iy/=len; }
+    if(Math.abs(ix)>Math.abs(iy)) player.dir = ix<0?1:2; else player.dir = iy<0?3:0;
+    const sp=player.running?100:56;
+    const nx=player.x+ix*sp*dt; if(!blockedAt(nx,player.y)) player.x=nx;
+    const ny=player.y+iy*sp*dt; if(!blockedAt(player.x,ny)) player.y=ny;
+    const prev=player.frame;
+    player.anim+=dt*(player.running?12:8); player.frame=Math.floor(player.anim)%4;
+    if(prev!==player.frame && (player.frame===1||player.frame===3)){
+      const t=get(Math.floor(player.x/TS),Math.floor((player.y-1)/TS));
+      if(t===PATH||t===SAND) spawn(player.x,player.y-1,t===PATH?'#ead6a6':'#f6e8bd',player.running?3:1,12);
+      else if(t===TALL) spawn(player.x,player.y-3,'#7cc061',2,22);
+    }
+    if(!hudTimer) hudTimer=setTimeout(()=>hud.classList.add('hide'),2500);
+  } else { player.anim=0; player.frame=0; }
+
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=50*dt; p.life-=dt;
+    if(p.life<=0) parts.splice(i,1);
+  }
+  for(const b of flies){
+    b.t+=dt; b.a+=(Math.random()-.5)*dt*5;
+    b.x+=Math.cos(b.a)*16*dt; b.y+=Math.sin(b.a)*16*dt;
+    const dx=player.x-b.x, dy=player.y-b.y;
+    if(Math.hypot(dx,dy)>260){ b.a=Math.atan2(dy,dx); }
+    b.x=Math.max(TS*2,Math.min(MW*TS-TS*2,b.x)); b.y=Math.max(TS*2,Math.min(MH*TS-TS*2,b.y));
+  }
+}
+
+function render(){
+  const cx=Math.round(Math.max(0,Math.min(MW*TS-VW,player.x-VW/2)));
+  const cy=Math.round(Math.max(0,Math.min(MH*TS-VH,player.y-8-VH/2)));
+  ctx.fillStyle='#2f5a28'; ctx.fillRect(0,0,VW,VH);
+  ctx.drawImage(ground,-cx,-cy);
+
+  const x0=Math.max(0,Math.floor(cx/TS)-1), x1=Math.min(MW-1,Math.ceil((cx+VW)/TS)+1);
+  const y0=Math.max(0,Math.floor(cy/TS)-1), y1=Math.min(MH-1,Math.ceil((cy+VH)/TS)+2);
+
+  ctx.fillStyle='#b8e0f6';
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+    if(get(x,y)!==WATER) continue;
+    if(Math.sin(time*1.6+hash(x,y,99)*20)>0.75)
+      ctx.fillRect(x*TS-cx+2+Math.floor(hash(x,y,98)*10), y*TS-cy+4+Math.floor(hash(x,y,97)*9),3,1);
+  }
+
+  const px=Math.round(player.x)-cx, py=Math.round(player.y)-cy;
+  let drawn=false;
+  const drawMe=()=>{
+    drawPlayer(ctx,px,py);
+    if(get(Math.floor(player.x/TS),Math.floor((player.y-1)/TS))===TALL){
+      const sway=player.moving?Math.round(Math.sin(time*14)):0;
+      for(let i=-6;i<=6;i+=2){
+        const h=3+((i+12)%4===0?1:0);
+        ctx.fillStyle=(i/2)%2===0?'#3b7530':'#5a9e48'; ctx.fillRect(px+i+sway,py-h,1,h);
+        ctx.fillStyle='#7cc061'; ctx.fillRect(px+i+sway,py-h,1,1);
+      }
+    }
+    drawn=true;
+  };
+  for(let y=y0;y<=y1;y++){
+    if(!drawn && (y+1)*TS>player.y) drawMe();
+    for(const p of props[y]){
+      if(p.x<x0||p.x>x1) continue;
+      if(p.t===TREE) ctx.drawImage(TREES[p.v],p.x*TS-cx-3,y*TS-cy-11);
+      else ctx.drawImage(STONE_IMG,p.x*TS-cx+2,y*TS-cy+6);
+    }
+  }
+  if(!drawn) drawMe();
+
+  for(const p of parts){
+    ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.col;
+    const s=p.life>p.max*.5?2:1; ctx.fillRect(Math.round(p.x)-cx,Math.round(p.y)-cy,s,s);
+  }
+  ctx.globalAlpha=1;
+
+  for(const b of flies){
+    const bx=Math.round(b.x)-cx, by=Math.round(b.y+Math.sin(b.t*3)*3)-cy-10;
+    if(bx<-4||by<-4||bx>VW+4||by>VH+4) continue;
+    ctx.fillStyle='rgba(20,35,15,.18)'; ctx.fillRect(bx-1,by+12,3,1);
+    ctx.fillStyle=b.col;
+    if(Math.floor(b.t*10)%2===0){ ctx.fillRect(bx-2,by-1,2,2); ctx.fillRect(bx+1,by-1,2,2); }
+    else { ctx.fillRect(bx-1,by-1,1,2); ctx.fillRect(bx+1,by-1,1,2); }
+    ctx.fillStyle='#2a1e26'; ctx.fillRect(bx,by-1,1,2);
+  }
+}
+
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now; time+=dt;
+  update(dt); render(); requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
